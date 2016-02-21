@@ -182,15 +182,19 @@ public class ServerCore implements Server {
 							//and wait for commit signal
 							object = o_in.readObject();
 							if (object instanceof Operations) {
+								System.out.println("commit signal");
 								Operations op = (Operations)object;
 								if(op.getType().equals(OperationType.COMMIT)) {
 									operation.commit();
 									m = new Message();
 									m.setStatusCode(200);
 									o_out.writeObject(m);
+									System.out.println("commited");
 								}
 							}						
 							//closing the socket
+							System.out.println("closing socket");
+
 							in.close();
 						}
 					}			
