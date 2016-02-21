@@ -153,9 +153,10 @@ public class ServerCore implements Server {
 								sync_status &= synchronize(operation, entry.getValue().getO_in(), entry.getValue().getO_out());
 							}
 							
-							System.out.println("all sync");
 
 							if (sync_status) {
+								System.out.println("all sync");
+
 								operation.commit();
 								operation.setType(OperationType.COMMIT);
 								for (Map.Entry<InetAddress, SocketMap> entry : sockets.entrySet()) {						
@@ -184,6 +185,7 @@ public class ServerCore implements Server {
 							if (object instanceof Operations) {
 								System.out.println("commit signal");
 								Operations op = (Operations)object;
+								System.out.println(op.getType().toString());
 								if(op.getType().equals(OperationType.COMMIT)) {
 									operation.commit();
 									m = new Message();
