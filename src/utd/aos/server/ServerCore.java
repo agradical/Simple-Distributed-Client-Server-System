@@ -74,6 +74,8 @@ public class ServerCore implements Server {
 		
 		while(!clientSocket.isClosed()) {
 
+			System.out.println("attemp to read object");
+
 			Object object = o_in.readObject();
 
 			Operations operation = null;
@@ -93,6 +95,8 @@ public class ServerCore implements Server {
 					System.out.println("checking operation perform");
 					perform_status = operation.perform();
 					if (perform_status) {
+						System.out.println("perform success");
+
 						if(!otherServers.containsKey(clientSocket.getInetAddress())) {					
 							
 							for (Map.Entry<InetAddress, Integer> entry : otherServers.entrySet()) {						
@@ -100,10 +104,14 @@ public class ServerCore implements Server {
 								sockets.put(entry.getKey(), socket);
 							}
 							
+							System.out.println("attempt to synchronize");
+
 							for (Map.Entry<InetAddress, Socket> entry : sockets.entrySet()) {						
 								sync_status &= synchronize(entry.getValue(), operation);
 							}
 							
+							System.out.println("all sync");
+
 							if (sync_status) {
 								operation.commit();
 								operation.setType(OperationType.COMMIT);
