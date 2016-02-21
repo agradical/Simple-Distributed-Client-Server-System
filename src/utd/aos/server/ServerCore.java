@@ -43,23 +43,27 @@ public class ServerCore implements Server {
 
 	@Override
 	public void run() {
+		ServerSocket serverSocket = null;
 		try {
-			ServerSocket serverSocket = new ServerSocket(this.getPort());
+			serverSocket = new ServerSocket(this.getPort());
 			System.out.println("Socket created");
-			Socket clientSocket = serverSocket.accept();
-			System.out.println("Socket accepted");
+			while(true) {
+				Socket clientSocket = serverSocket.accept();
+				System.out.println("Socket accepted");
 
-			execute(clientSocket);				
-		
-			clientSocket.close();
-			serverSocket.close();
-			System.out.println("Closing socketss");
+				execute(clientSocket);				
+
+				clientSocket.close();
+				System.out.println("Closing client socketss");
+			}
 
 		} catch (IOException i) {
 			i.printStackTrace();
 		} catch (ClassNotFoundException c) {
 			c.printStackTrace();
 		}
+		System.out.println("Closing server socketss");
+
 	}
 	
 	class SocketMap {
