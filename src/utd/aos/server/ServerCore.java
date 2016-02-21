@@ -87,7 +87,10 @@ public class ServerCore implements Server {
 				boolean perform_status = false;
 				boolean sync_status = true;
 
+				System.out.println("object not null");
+				
 				if (operation.getType().equals(OperationType.PERFORM)) {
+					System.out.println("checking operation perform");
 					perform_status = operation.perform();
 					if (perform_status) {
 						if(!otherServers.containsKey(clientSocket.getInetAddress())) {					
@@ -96,7 +99,7 @@ public class ServerCore implements Server {
 								Socket socket = new Socket(entry.getKey(), entry.getValue());
 								sockets.put(entry.getKey(), socket);
 							}
-
+							
 							for (Map.Entry<InetAddress, Socket> entry : sockets.entrySet()) {						
 								sync_status &= synchronize(entry.getValue(), operation);
 							}
