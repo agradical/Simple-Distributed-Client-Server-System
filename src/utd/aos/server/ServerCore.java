@@ -27,10 +27,9 @@ public class ServerCore implements Server {
 	}
 	
 	@Override
-	public void setServer(InetAddress ip, Integer port, HashMap<InetAddress, Integer> servers) {
+	public void setServer(InetAddress ip, Integer port) {
 		this.ip = ip;
 		this.port = port;
-		this.otherServers = servers;
 	}
 	
 	@Override
@@ -98,7 +97,8 @@ public class ServerCore implements Server {
 						System.out.println("perform success");
 
 						if(!otherServers.containsKey(clientSocket.getInetAddress())) {					
-							
+							System.out.println("this server is connected with client");
+
 							for (Map.Entry<InetAddress, Integer> entry : otherServers.entrySet()) {						
 								Socket socket = new Socket(entry.getKey(), entry.getValue());
 								sockets.put(entry.getKey(), socket);

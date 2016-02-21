@@ -45,14 +45,14 @@ public class Main {
 			
 			for(InetSocketAddress addr: server_ips) {
 				if(addr.getHostName().equals(InetAddress.getLocalHost().getHostName())) {
-					myServer.setServer(addr.getAddress(), addr.getPort(), null);
+					myServer.setServer(addr.getAddress(), addr.getPort());
 					myinet = addr;
+				} else {
+					myServer.addServer(addr.getAddress(), addr.getPort());
 				}
 			}
 			
-			if (myinet != null) {
-				server_ips.remove(myinet);
-			} else {
+			if (myinet == null) {
 				System.out.println("This is not listed server");
 				return;
 			}
