@@ -40,13 +40,22 @@ public class Main {
 			br.close();
 			
 			Server myServer = new ServerCore();
-						
+			
+			InetSocketAddress myinet = null;
+			
 			for(InetSocketAddress addr: server_ips) {
 				if(addr.getHostName().equals(InetAddress.getLocalHost().getHostName())) {
 					myServer.setServer(addr.getAddress(), addr.getPort(), null);
-					server_ips.remove(addr);
+					myinet = addr;
 				}
-			}		
+			}
+			
+			if (myinet != null) {
+				server_ips.remove(myinet);
+			} else {
+				System.out.println("This is not listed server");
+				return;
+			}
 
 			exec.submit(myServer);	
 			
