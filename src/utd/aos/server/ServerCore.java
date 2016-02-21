@@ -159,6 +159,7 @@ public class ServerCore implements Server {
 
 								operation.commit();
 								operation.setType(OperationType.COMMIT);
+								System.out.println(operation.getType().toString());
 								for (Map.Entry<InetAddress, SocketMap> entry : sockets.entrySet()) {						
 									sync_status &= synchronize(operation, entry.getValue().getO_in(), entry.getValue().getO_out());
 								}
