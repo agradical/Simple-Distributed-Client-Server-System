@@ -160,9 +160,9 @@ public class ServerCore implements Server {
 								operation.commit();
 								Operations op = new Operations();
 								op.setType(OperationType.COMMIT);
-								System.out.println(operation.getType().toString());
+								System.out.println(op.getType().toString());
 								for (Map.Entry<InetAddress, SocketMap> entry : sockets.entrySet()) {						
-									sync_status &= synchronize(operation, entry.getValue().getO_in(), entry.getValue().getO_out());
+									sync_status &= synchronize(op, entry.getValue().getO_in(), entry.getValue().getO_out());
 								}
 								
 								//closing the socket
