@@ -60,10 +60,46 @@ public class ServerCore implements Server {
 		}
 	}
 	
+	class SocketMap {
+		Socket socket;
+		ObjectOutputStream o_out;
+		ObjectInputStream o_in;
+		
+		public SocketMap(Socket socket,ObjectOutputStream o_out, ObjectInputStream o_in) {
+			this.socket = socket;
+			this.o_in = o_in;
+			this.o_out = o_out;
+		}
+
+		public Socket getSocket() {
+			return socket;
+		}
+
+		public void setSocket(Socket socket) {
+			this.socket = socket;
+		}
+
+		public ObjectOutputStream getO_out() {
+			return o_out;
+		}
+
+		public void setO_out(ObjectOutputStream o_out) {
+			this.o_out = o_out;
+		}
+
+		public ObjectInputStream getO_in() {
+			return o_in;
+		}
+
+		public void setO_in(ObjectInputStream o_in) {
+			this.o_in = o_in;
+		}
+	}
+	
 	@Override
 	public void execute(Socket clientSocket) throws IOException, ClassNotFoundException {
 		
-		Map<InetAddress, Socket> sockets = new HashMap<InetAddress, Socket>();
+		Map<InetAddress, SocketMap> sockets = new HashMap<InetAddress, SocketMap>();
 		
 		InputStream in = clientSocket.getInputStream();
 		OutputStream out = clientSocket.getOutputStream();
@@ -101,13 +137,20 @@ public class ServerCore implements Server {
 
 							for (Map.Entry<InetAddress, Integer> entry : otherServers.entrySet()) {						
 								Socket socket = new Socket(entry.getKey(), entry.getValue());
-								sockets.put(entry.getKey(), socket);
+								
+								OutputStream sock_out = socket.getOutputStream();
+								ObjectOutputStream sock_o_out = new ObjectOutputStream(sock_out);
+								
+								InputStream sock_in = socket.getInputStream();
+								ObjectInputStream sock_o_in = new ObjectInputStream(sock_in);
+								
+								sockets.put(entry.getKey(), new SocketMap(socket, sock_o_out, sock_o_in));
 							}
 							
 							System.out.println("attempt to synchronize");
 
-							for (Map.Entry<InetAddress, Socket> entry : sockets.entrySet()) {						
-								sync_status &= synchronize(entry.getValue(), operation);
+							for (Map.Entry<InetAddress, SocketMap> entry : sockets.entrySet()) {						
+								sync_status &= synchronize(operation, entry.getValue().getO_in(), entry.getValue().getO_out());
 							}
 							
 							System.out.println("all sync");
@@ -115,8 +158,8 @@ public class ServerCore implements Server {
 							if (sync_status) {
 								operation.commit();
 								operation.setType(OperationType.COMMIT);
-								for (Map.Entry<InetAddress, Socket> entry : sockets.entrySet()) {						
-									sync_status &= synchronize(entry.getValue(), operation);
+								for (Map.Entry<InetAddress, SocketMap> entry : sockets.entrySet()) {						
+									sync_status &= synchronize(operation, entry.getValue().getO_in(), entry.getValue().getO_out());
 								}
 								
 								//closing the socket
@@ -157,18 +200,14 @@ public class ServerCore implements Server {
 
 	}
 
-	public boolean synchronize(Socket socket, Operations operation) throws IOException, ClassNotFoundException {
+	public boolean synchronize(Operations operation, ObjectInputStream o_in, ObjectOutputStream o_out) throws IOException, ClassNotFoundException {
 		//send operation to other servers
-		System.out.println("synchronize to other servers");
-
-		OutputStream out = socket.getOutputStream();
-		ObjectOutputStream o_out = new ObjectOutputStream(out);	
+		System.out.println("synchronize to other servers");	
 		
 		o_out.writeObject(operation);
 		
 		//wait for their status
-		InputStream in = socket.getInputStream();
-		ObjectInputStream o_in = new ObjectInputStream(in);
+		
 		Object object = o_in.readObject();
 		
 		Message m;
