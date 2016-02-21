@@ -51,8 +51,10 @@ public class ServerCore implements Server {
 
 			execute(clientSocket);				
 		
+			clientSocket.close();
 			serverSocket.close();
-			
+			System.out.println("Closing socketss");
+
 		} catch (IOException i) {
 			i.printStackTrace();
 		} catch (ClassNotFoundException c) {
@@ -205,6 +207,8 @@ public class ServerCore implements Server {
 				}
 			}
 		}
+		
+		System.out.println("closing server socket");
 
 	}
 
