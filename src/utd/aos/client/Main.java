@@ -61,7 +61,10 @@ public class Main {
 				String input = scan.nextLine();
 				
 				String arg[] = input.split(" ");
-				
+				if(arg.length <2) {
+					System.out.println("Please write valid command or argument");
+					continue;
+				}
 				Operations operation = new Operations();
 				try {
 					OperationMethod.valueOf(arg[0]);
@@ -95,7 +98,7 @@ public class Main {
 					break;
 				}
 				Resource resource = new Resource();
-				resource.setFilename(filename);
+				resource.setFilename(arg[1]);
 				operation.setResource(resource);
 				
 				if(arg.length > 2) {
