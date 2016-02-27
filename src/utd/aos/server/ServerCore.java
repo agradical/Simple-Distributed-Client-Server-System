@@ -20,7 +20,9 @@ public class ServerCore implements Server {
 	private Map<InetAddress, Integer> otherServers;
 	private InetAddress ip;
 	private Integer port;
-
+	
+	public static String DATA_DIRECTORY = "data";
+	
 	@Override
 	public Server getServer() {
 		return this;
@@ -258,6 +260,7 @@ public class ServerCore implements Server {
 	public void setPort(int port) {
 		this.port = port;
 	}
+
 
 
 }

@@ -1,5 +1,10 @@
 package utd.aos.utils;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.Serializable;
+
+import utd.aos.server.ServerCore;
 
 public class Operations implements Serializable{
 
@@ -18,8 +23,34 @@ public class Operations implements Serializable{
 	public String filename;
 	public String arg;
 	
+	public byte[] fileContent;
+	
 	//Perform the operation
 	public boolean perform() {
+		
+		if(!this.operation.equals(OperationMethod.CREATE)) {
+			if(this.getFileContent() != null) {
+				File dir = new File(ServerCore.DATA_DIRECTORY);
+				if(!dir.exists()) {
+					dir.mkdir();
+				}
+				
+				File file =  new File(ServerCore.DATA_DIRECTORY+"/"+filename);
+				if(!file.exists()) {
+					try {
+					file.createNewFile();
+					FileOutputStream fos = new FileOutputStream(file);
+					fos.write(this.getFileContent());
+					fos.close();
+					} catch (IOException e) {
+						
+					}
+				} else {
+					return false;
+				}
+			}
+		}
+		
 		//Create a tmp file to perform opertion.. in order to rollback if needed
 		if(!this.operation.equals(OperationMethod.READ)) {
 			//Create lock
@@ -59,6 +90,14 @@ public class Operations implements Serializable{
 
 	public void setType(OperationType type) {
 		this.type = type;
+	}
+
+	public byte[] getFileContent() {
+		return fileContent;
+	}
+
+	public void setFileContent(byte[] fileContent) {
+		this.fileContent = fileContent;
 	}
 	
 }

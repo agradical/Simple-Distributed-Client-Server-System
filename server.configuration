@@ -1,3 +1,1 @@
-dc01.utdallas.edu 1717
-dc02.utdallas.edu 1717
-dc03.utdallas.edu 1717
+DATA_DIRECTORY='data'

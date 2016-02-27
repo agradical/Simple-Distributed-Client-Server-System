@@ -17,8 +17,9 @@ public class Main {
 	public static final int NTHREADS = 20;
     public static final ExecutorService exec = Executors.newFixedThreadPool(NTHREADS);
 
+    
 	public static void main(String[] args) {
-		String filename = "server.configuration";
+		String filename = "server.list";
 		if(args.length != 0) {		
 			filename = args[0];
 		}
@@ -40,7 +41,6 @@ public class Main {
 			br.close();
 			
 			Server myServer = new ServerCore();
-			
 			InetSocketAddress myinet = null;
 			
 			for(InetSocketAddress addr: server_ips) {
