@@ -9,7 +9,7 @@ public class Operations implements Serializable{
 	private static final long serialVersionUID = 1L;
 	
 	public static enum OperationMethod {
-		CREATE, SEEK, READ, WRITE, DELETE
+		CREATE, SEEK, READ, WRITE, DELETE, TERMINATE
 	}
 	
 	public static enum OperationType {
@@ -26,14 +26,14 @@ public class Operations implements Serializable{
 	//Perform the operation
 	public boolean perform(String DATADIRECTORY) {
 		
-		if(!this.operation.equals(OperationMethod.CREATE)) {
+		if(this.operation.equals(OperationMethod.CREATE)) {
 			if(this.getFileContent() != null) {
 				File dir = new File(DATADIRECTORY);
 				if(!dir.exists()) {
 					dir.mkdirs();
 				}
 				
-				File file =  new File(DATADIRECTORY, filename);
+				File file =  new File(DATADIRECTORY, "."+filename+".tmp");
 				try {
 					file.createNewFile();
 					FileOutputStream fos = new FileOutputStream(file);
@@ -48,15 +48,21 @@ public class Operations implements Serializable{
 		
 		//Create a tmp file to perform opertion.. in order to rollback if needed
 		if(!this.operation.equals(OperationMethod.READ)) {
-			//Create lock
 			
-			//Delete lock
 		}
 		return true;
 	}
 
 	//Commit and send signal to commit operation.
-	public boolean commit() {	
+	public boolean commit(String DATADIRECTORY) {
+		File tmp_file =  new File(DATADIRECTORY, "."+filename+".tmp");
+		if(tmp_file.exists()) {
+			File file = new File(DATADIRECTORY, filename);
+			if(file.exists()) {
+				file.delete();
+			}
+			tmp_file.renameTo(file);
+		}
 		return true;
 	}
 

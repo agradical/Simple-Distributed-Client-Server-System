@@ -81,7 +81,11 @@ public class Main {
 						break;
 					case DELETE:
 						operation.setOperation(OperationMethod.DELETE);
-						break;			
+						break;
+					case TERMINATE:
+						System.out.println("Good Bye!");
+						System.exit(0);
+						break;
 				}
 				
 				

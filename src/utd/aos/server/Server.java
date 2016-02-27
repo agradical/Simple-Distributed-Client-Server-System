@@ -12,4 +12,12 @@ public interface Server extends Runnable {
 	
 	public void execute(Socket clientSocket) throws IOException, ClassNotFoundException;	
 	
+	public String getDATADIRECTORY();
+	public void setDATADIRECTORY(String DATADIRECTORY);
+	
+	public InetAddress getIp();
+	public void setIp(InetAddress ip);
+	public int getPort();
+	public void setPort(int port);
+	
 }

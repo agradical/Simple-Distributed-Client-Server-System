@@ -21,7 +21,7 @@ public class ServerCore implements Server {
 	private InetAddress ip;
 	private Integer port;
 	
-	public static String DATADIRECTORY = "data";
+	public String DATADIRECTORY = "data";
 	
 	@Override
 	public Server getServer() {
@@ -136,7 +136,7 @@ public class ServerCore implements Server {
 				
 				if (operation.getType().equals(OperationType.PERFORM)) {
 					System.out.println("checking operation perform");
-					perform_status = operation.perform(DATADIRECTORY);
+					perform_status = operation.perform(this.getDATADIRECTORY());
 					if (perform_status) {
 						System.out.println("perform success");
 
@@ -165,7 +165,7 @@ public class ServerCore implements Server {
 							if (sync_status) {
 								System.out.println("all sync");
 
-								operation.commit();
+								operation.commit(this.getDATADIRECTORY());
 								Operations op = new Operations();
 								op.setType(OperationType.COMMIT);
 								System.out.println(op.getType().toString());
@@ -197,7 +197,7 @@ public class ServerCore implements Server {
 								Operations op = (Operations)object;
 								System.out.println(op.getType().toString());
 								if(op.getType().equals(OperationType.COMMIT)) {
-									operation.commit();
+									operation.commit(this.getDATADIRECTORY());
 									m = new Message();
 									m.setStatusCode(200);
 									o_out.writeObject(m);
@@ -259,6 +259,14 @@ public class ServerCore implements Server {
 
 	public void setPort(int port) {
 		this.port = port;
+	}
+
+	public String getDATADIRECTORY() {
+		return this.DATADIRECTORY;
+	}
+
+	public void setDATADIRECTORY(String dATADIRECTORY) {
+		this.DATADIRECTORY = dATADIRECTORY;
 	}
 
 
