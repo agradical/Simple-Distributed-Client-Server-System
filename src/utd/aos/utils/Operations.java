@@ -4,8 +4,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 
-import utd.aos.server.ServerCore;
-
 public class Operations implements Serializable{
 
 	private static final long serialVersionUID = 1L;
@@ -26,16 +24,16 @@ public class Operations implements Serializable{
 	public byte[] fileContent;
 	
 	//Perform the operation
-	public boolean perform() {
+	public boolean perform(String DATADIRECTORY) {
 		
 		if(!this.operation.equals(OperationMethod.CREATE)) {
 			if(this.getFileContent() != null) {
-				File dir = new File(ServerCore.DATA_DIRECTORY);
+				File dir = new File(DATADIRECTORY);
 				if(!dir.exists()) {
 					dir.mkdir();
 				}
 				
-				File file =  new File(ServerCore.DATA_DIRECTORY+"/"+filename);
+				File file =  new File(DATADIRECTORY+"/"+filename);
 				if(!file.exists()) {
 					try {
 					file.createNewFile();

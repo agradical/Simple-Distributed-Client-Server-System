@@ -21,7 +21,7 @@ public class ServerCore implements Server {
 	private InetAddress ip;
 	private Integer port;
 	
-	public static String DATA_DIRECTORY = "data";
+	public static String DATADIRECTORY = "data";
 	
 	@Override
 	public Server getServer() {
@@ -136,7 +136,7 @@ public class ServerCore implements Server {
 				
 				if (operation.getType().equals(OperationType.PERFORM)) {
 					System.out.println("checking operation perform");
-					perform_status = operation.perform();
+					perform_status = operation.perform(DATADIRECTORY);
 					if (perform_status) {
 						System.out.println("perform success");
 
