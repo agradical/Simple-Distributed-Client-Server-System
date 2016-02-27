@@ -5,15 +5,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-
-
 import utd.aos.utils.Message;
 import utd.aos.utils.Operations;
 import utd.aos.utils.Resource;
 import utd.aos.utils.Operations.OperationMethod;
 
 public class Client {
-	public Message request(Operations operation, ObjectOutputStream o_out, ObjectInputStream o_in) throws IOException, ClassNotFoundException {
+	public Message request(Operations operation, ObjectOutputStream o_out, ObjectInputStream o_in) throws IOException, ClassNotFoundException {	
 		
 		if(operation.getOperation().equals(OperationMethod.CREATE)) {
 			Resource resource = operation.getResource();

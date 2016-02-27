@@ -49,10 +49,11 @@ public class Main {
 		try {
 
 			Socket socket = new Socket(server, 1717);
-			InputStream in = socket.getInputStream();
-			ObjectInputStream o_in = new ObjectInputStream(in);
+			
 			OutputStream out = socket.getOutputStream();
 			ObjectOutputStream o_out = new ObjectOutputStream(out);
+			InputStream in = socket.getInputStream();
+			ObjectInputStream o_in = new ObjectInputStream(in);
 			
 			Client client = new Client();
 			Scanner scan = new Scanner(System.in);
