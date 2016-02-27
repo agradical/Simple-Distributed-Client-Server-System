@@ -118,7 +118,7 @@ public class ServerCore implements Server {
 		ObjectInputStream o_in = new ObjectInputStream(in);
 		ObjectOutputStream o_out = new ObjectOutputStream(out);
 
-		while(o_in.readBoolean()) {
+		while(!clientSocket.isClosed()) {
 
 			System.out.println("attemp to read object");
 
