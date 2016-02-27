@@ -199,12 +199,12 @@ public class ServerCore implements Server {
 								System.out.println("all sync");
 
 								operation.commit(this.getDATADIRECTORY());
-								Operations op = new Operations();
-								op.setType(OperationType.COMMIT);
-								System.out.println(op.getType().toString());
+								Operations commit_op = new Operations();
+								commit_op.setType(OperationType.COMMIT);
+								System.out.println(commit_op.getType().toString());
 								
 								for (Map.Entry<InetAddress, SocketMap> entry : sockets.entrySet()) {						
-									sync_message = synchronize(operation, entry.getValue().getO_in(), entry.getValue().getO_out());
+									sync_message = synchronize(commit_op, entry.getValue().getO_in(), entry.getValue().getO_out());
 									if(sync_message.getStatusCode() != 200) {
 										sync_status = false;
 									}
