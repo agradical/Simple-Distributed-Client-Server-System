@@ -83,8 +83,11 @@ public class Main {
 				}
 				
 				operation.setFilename(arg[1]);
-				operation.setArg(arg[2]);
-
+				
+				if(arg.length > 2) {
+					operation.setArg(arg[2]);
+				}
+				
 				operation.setType(OperationType.PERFORM);
 				
 				client.request(socket, operation);
