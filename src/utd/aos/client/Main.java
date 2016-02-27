@@ -4,6 +4,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +49,11 @@ public class Main {
 		try {
 
 			Socket socket = new Socket(server, 1717);
+			InputStream in = socket.getInputStream();
+			ObjectInputStream o_in = new ObjectInputStream(in);
+			OutputStream out = socket.getOutputStream();
+			ObjectOutputStream o_out = new ObjectOutputStream(out);
+			
 			Client client = new Client();
 			Scanner scan = new Scanner(System.in);
 			System.out.println("Select Operation to perform");
@@ -104,13 +113,14 @@ public class Main {
 				if(arg.length > 2) {
 					operation.setArg(arg[2]);
 				}
-				
+							
 				operation.setType(OperationType.PERFORM);				
-				Message m = client.request(socket, operation);
+				Message m = client.request(operation, o_out, o_in);
 				System.out.println(m.messsage);			
 			}
 			scan.close();
-
+			socket.close();
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException c) {

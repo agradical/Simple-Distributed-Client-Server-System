@@ -3,11 +3,9 @@ package utd.aos.client;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.net.Socket;
+
 
 import utd.aos.utils.Message;
 import utd.aos.utils.Operations;
@@ -15,10 +13,7 @@ import utd.aos.utils.Resource;
 import utd.aos.utils.Operations.OperationMethod;
 
 public class Client {
-	public Message request(Socket socket, Operations operation) throws IOException, ClassNotFoundException {
-		
-		OutputStream out = socket.getOutputStream();
-		ObjectOutputStream o_out = new ObjectOutputStream(out);	
+	public Message request(Operations operation, ObjectOutputStream o_out, ObjectInputStream o_in) throws IOException, ClassNotFoundException {
 		
 		if(operation.getOperation().equals(OperationMethod.CREATE)) {
 			Resource resource = operation.getResource();
@@ -38,8 +33,6 @@ public class Client {
 		o_out.writeObject(operation);
 		
 		//wait for their status
-		InputStream in = socket.getInputStream();
-		ObjectInputStream o_in = new ObjectInputStream(in);
 		Object object = o_in.readObject();
 		
 		
