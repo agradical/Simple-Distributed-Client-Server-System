@@ -9,6 +9,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
+import utd.aos.server.resources.Resource;
 import utd.aos.utils.Message;
 import utd.aos.utils.Operations;
 import utd.aos.utils.Operations.OperationMethod;
@@ -20,12 +21,16 @@ public class Client {
 		ObjectOutputStream o_out = new ObjectOutputStream(out);	
 		
 		if(operation.getOperation().equals(OperationMethod.CREATE)) {
-			File file = new File(operation.getFilename());
+			Resource resource = operation.getResource();
+			File file = new File(resource.getFilename());
 			if(file.exists()) {
 				FileInputStream fis = new FileInputStream(file);
 				byte[] fileContent = new byte[(int)file.length()];
 				fis.read(fileContent);
-				operation.setFileContent(fileContent);
+						
+				resource.setFileContent(fileContent);
+				
+				operation.setResource(resource);
 				fis.close();
 			}
 		}

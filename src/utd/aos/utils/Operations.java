@@ -1,8 +1,12 @@
 package utd.aos.utils;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.io.Serializable;
+
+import utd.aos.server.resources.Resource;
 
 public class Operations implements Serializable{
 
@@ -18,51 +22,104 @@ public class Operations implements Serializable{
 	
 	public OperationType type;
 	public OperationMethod operation;
-	public String filename;
+
 	public String arg;
 	
-	public byte[] fileContent;
+	public Resource resource;
 	
 	//Perform the operation
-	public boolean perform(String DATADIRECTORY) {
+	public Message perform(String DATADIRECTORY, Resource resource) {
+		
+		Message m = new Message();
+		this.setResource(resource);	
 		
 		if(this.operation.equals(OperationMethod.CREATE)) {
-			if(this.getFileContent() != null) {
+			if(resource.getFileContent() != null) {
 				File dir = new File(DATADIRECTORY);
 				if(!dir.exists()) {
 					dir.mkdirs();
 				}
 				
-				File file =  new File(DATADIRECTORY, "."+filename+".tmp");
+				File file =  new File(DATADIRECTORY, "."+resource.getFilename()+".tmp");
 				try {
 					file.createNewFile();
 					FileOutputStream fos = new FileOutputStream(file);
-					fos.write(this.getFileContent());
+					fos.write(resource.getFileContent());
 					fos.close();
+					m.setStatusCode(200);
+					m.setMesssage("File creation successful");
 				} catch (IOException e) {
-
+					m.setStatusCode(100);
+					m.setMesssage("File creation failed");
 				}
 			}
 		}
 		
-		//Create a tmp file to perform opertion.. in order to rollback if needed
-		if(!this.operation.equals(OperationMethod.READ)) {
+		else if(this.operation.equals(OperationMethod.READ)) {
+			File file = new File(DATADIRECTORY, resource.getFilename());
+			try {
+				RandomAccessFile file_r = new RandomAccessFile(file, "r");
+				file_r.seek(resource.getSeek());
+				int count = Integer.parseInt(this.getArg());
+				String result = "";
+				while (count > 0) {
+					result += file_r.readChar();
+				}
+				m.setStatusCode(200);
+				m.setMesssage(result);
+				file_r.close();
+			} catch (FileNotFoundException f) {
+				m.setStatusCode(100);
+				m.setMesssage("File not Found");
+			} catch (IOException i) {
+				m.setStatusCode(100);
+				m.setMesssage("File not Found");
+			}
+		}
+		
+		else if(this.operation.equals(OperationMethod.WRITE)) {
 			
 		}
-		return true;
+		
+		else if(this.operation.equals(OperationMethod.DELETE)) {
+			File file = new File(DATADIRECTORY, resource.getFilename() );
+			if (file.exists()){
+				m.setStatusCode(200);
+				m.setMesssage("File deletion successful");
+			}
+		}
+		
+		return m;
 	}
 
 	//Commit and send signal to commit operation.
-	public boolean commit(String DATADIRECTORY) {
-		File tmp_file =  new File(DATADIRECTORY, "."+filename+".tmp");
-		if(tmp_file.exists()) {
-			File file = new File(DATADIRECTORY, filename);
+	public Message commit(String DATADIRECTORY) {
+		
+		Message m = new Message();
+		
+		if(this.operation.equals(OperationMethod.DELETE)) {
+			File file = new File(DATADIRECTORY, this.resource.getFilename());
 			if(file.exists()) {
 				file.delete();
+				m.setStatusCode(200);
+				m.setMesssage("File Deletion Operation Committed successfully");
+			} else {
+				m.setStatusCode(100);
+				m.setMesssage("File doesnot exists");
 			}
-			tmp_file.renameTo(file);
 		}
-		return true;
+		else {
+			File tmp_file =  new File(DATADIRECTORY, "."+this.resource.getFilename()+".tmp");
+			if(tmp_file.exists()) {
+				File file = new File(DATADIRECTORY, this.resource.getFilename());
+				if(file.exists()) {
+					file.delete();
+				}
+				tmp_file.renameTo(file);
+			}
+		}
+			
+		return m;
 	}
 
 	public OperationMethod getOperation() {
@@ -71,12 +128,7 @@ public class Operations implements Serializable{
 	public void setOperation(OperationMethod operation) {
 		this.operation = operation;
 	}
-	public String getFilename() {
-		return filename;
-	}
-	public void setFilename(String filename) {
-		this.filename = filename;
-	}
+	
 	public String getArg() {
 		return arg;
 	}
@@ -92,12 +144,11 @@ public class Operations implements Serializable{
 		this.type = type;
 	}
 
-	public byte[] getFileContent() {
-		return fileContent;
+	public Resource getResource() {
+		return resource;
 	}
 
-	public void setFileContent(byte[] fileContent) {
-		this.fileContent = fileContent;
+	public void setResource(Resource resource) {
+		this.resource = resource;
 	}
-	
 }

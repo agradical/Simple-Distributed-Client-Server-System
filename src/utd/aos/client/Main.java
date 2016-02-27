@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
+import utd.aos.server.resources.Resource;
 import utd.aos.utils.Message;
 import utd.aos.utils.Operations;
 import utd.aos.utils.Operations.OperationMethod;
@@ -93,8 +94,9 @@ public class Main {
 				if(close) {
 					break;
 				}
-				
-				operation.setFilename(arg[1]);
+				Resource resource = new Resource();
+				resource.setFilename(filename);
+				operation.setResource(resource);
 				
 				if(arg.length > 2) {
 					operation.setArg(arg[2]);

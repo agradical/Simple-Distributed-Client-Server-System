@@ -11,8 +11,10 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
+import utd.aos.server.resources.Resource;
 import utd.aos.utils.Message;
 import utd.aos.utils.Operations;
+import utd.aos.utils.Operations.OperationMethod;
 import utd.aos.utils.Operations.OperationType;
 
 public class ServerCore implements Server {
@@ -111,6 +113,7 @@ public class ServerCore implements Server {
 	public void execute(Socket clientSocket) throws IOException, ClassNotFoundException {
 		
 		Map<InetAddress, SocketMap> sockets = new HashMap<InetAddress, SocketMap>();
+		Map<String, Resource> activeResourceMap = new HashMap<String, Resource>();
 		
 		InputStream in = clientSocket.getInputStream();
 		OutputStream out = clientSocket.getOutputStream();
@@ -132,17 +135,41 @@ public class ServerCore implements Server {
 			}
 
 			if (operation != null) {
-				boolean perform_status = false;
+				
+				if(operation.getOperation().equals(OperationMethod.TERMINATE)) {
+					in.close();
+				}
+				
+				Message perform_message = null;
 				boolean sync_status = true;
 
 				System.out.println("object not null");
 				
+				
 				if (operation.getType().equals(OperationType.PERFORM)) {
+					
 					System.out.println("checking operation perform");
-					perform_status = operation.perform(this.getDATADIRECTORY());
-					if (perform_status) {
+					
+					Resource inputResource = operation.getResource();
+					String filename = inputResource.getFilename();
+					Resource resource = inputResource;
+					if(activeResourceMap.get(filename) != null) {
+						resource = activeResourceMap.get(filename);
+					} else {
+						activeResourceMap.put(filename, resource);
+					}
+					
+					perform_message = operation.perform(this.getDATADIRECTORY(), resource);			
+					
+					
+					if (perform_message.getStatusCode() == 200) {
 						System.out.println("perform success");
 
+						if(operation.getOperation().equals(OperationMethod.READ)) {
+							o_out.writeObject(perform_message);
+							continue;
+						}
+						
 						if(!otherServers.containsKey(clientSocket.getInetAddress())) {					
 							System.out.println("this server is connected with client");
 
@@ -159,9 +186,12 @@ public class ServerCore implements Server {
 							}
 							
 							System.out.println("attempt to synchronize");
-
-							for (Map.Entry<InetAddress, SocketMap> entry : sockets.entrySet()) {						
-								sync_status &= synchronize(operation, entry.getValue().getO_in(), entry.getValue().getO_out());
+							Message sync_message  = null;
+							for (Map.Entry<InetAddress, SocketMap> entry : sockets.entrySet()) {
+								sync_message = synchronize(operation, entry.getValue().getO_in(), entry.getValue().getO_out());
+								if(sync_message.getStatusCode() != 200) {
+									sync_status = false;
+								}
 							}
 							
 
@@ -172,19 +202,23 @@ public class ServerCore implements Server {
 								Operations op = new Operations();
 								op.setType(OperationType.COMMIT);
 								System.out.println(op.getType().toString());
+								
 								for (Map.Entry<InetAddress, SocketMap> entry : sockets.entrySet()) {						
-									sync_status &= synchronize(op, entry.getValue().getO_in(), entry.getValue().getO_out());
+									sync_message = synchronize(operation, entry.getValue().getO_in(), entry.getValue().getO_out());
+									if(sync_message.getStatusCode() != 200) {
+										sync_status = false;
+									}
 								}
 								
-								//closing the socket
-								Message m = new Message();
-								
-								m.setStatusCode(200);
-								o_out.writeObject(m);
-								System.out.println("closing socket");
-
-								in.close();
+								if(!sync_status) {
+									o_out.writeObject(sync_message);
+								} else {
+									o_out.writeObject(perform_message);
+								}
+								//System.out.println("closing socket");
 							}
+							o_out.writeObject(sync_message);
+							
 						} else {
 							//sends back the success signal
 							Message m = new Message();
@@ -213,7 +247,10 @@ public class ServerCore implements Server {
 
 							//in.close();
 						}
-					}			
+					}
+					else {
+						o_out.writeObject(perform_message);
+					}
 				}
 			}
 		}
@@ -222,29 +259,22 @@ public class ServerCore implements Server {
 
 	}
 
-	public boolean synchronize(Operations operation, ObjectInputStream o_in, ObjectOutputStream o_out) throws IOException, ClassNotFoundException {
+	public Message synchronize(Operations operation, ObjectInputStream o_in, ObjectOutputStream o_out) throws IOException, ClassNotFoundException {
 		//send operation to other servers
 		System.out.println("synchronize to other servers");	
-		
 		o_out.writeObject(operation);
 		
-		//wait for their status
-		
+		//wait for their status		
 		Object object = o_in.readObject();
 		
-		Message m;
+		Message m = null;
 		
 		if (object instanceof Message) {
-			 m = (Message)object;
-			 System.out.println( "got ack");
-
-			 if(m.getStatusCode() == 200) {
-				 return true;
-			 } else {
-				 return false;
-			 }
+			m = (Message)object;
+			System.out.println( "got ack");
+			return m;			
 		} else {
-			return false;
+			return null;
 		}
 
 	}
