@@ -30,22 +30,19 @@ public class Operations implements Serializable{
 			if(this.getFileContent() != null) {
 				File dir = new File(DATADIRECTORY);
 				if(!dir.exists()) {
-					dir.mkdir();
+					dir.mkdirs();
 				}
 				
-				File file =  new File(DATADIRECTORY+"/"+filename);
-				if(!file.exists()) {
-					try {
+				File file =  new File(DATADIRECTORY, filename);
+				try {
 					file.createNewFile();
 					FileOutputStream fos = new FileOutputStream(file);
 					fos.write(this.getFileContent());
 					fos.close();
-					} catch (IOException e) {
-						
-					}
-				} else {
-					return false;
+				} catch (IOException e) {
+
 				}
+
 			}
 		}
 		

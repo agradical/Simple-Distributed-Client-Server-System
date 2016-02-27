@@ -44,6 +44,8 @@ public class Main {
 
 			Socket socket = new Socket(server, 1717);
 			Client client = new Client();
+			Scanner scan = new Scanner(System.in);
+			
 			while (true) {
 				System.out.println("Select Operation to perform");
 
@@ -52,13 +54,18 @@ public class Main {
 					System.out.println(count+") "+method.toString());
 					count++;
 				}
-
-				Scanner scan = new Scanner(System.in);
+			
 				String input = scan.nextLine();
 				
 				String arg[] = input.split(" ");
 				
 				Operations operation = new Operations();
+				try {
+					OperationMethod.valueOf(arg[0]);
+				} catch (Exception e) {
+					System.out.println("Select only listed operations");
+					continue;
+				}
 				switch (OperationMethod.valueOf(arg[0])) {
 					case CREATE:
 						operation.setOperation(OperationMethod.CREATE);
@@ -77,10 +84,6 @@ public class Main {
 						break;			
 				}
 				
-				if (operation.getOperation() == null) {
-					System.out.println("Please select the valid operation");
-					continue;
-				}
 				
 				operation.setFilename(arg[1]);
 				
@@ -92,8 +95,8 @@ public class Main {
 				
 				client.request(socket, operation);
 				
-				scan.close();
 			}
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException c) {
