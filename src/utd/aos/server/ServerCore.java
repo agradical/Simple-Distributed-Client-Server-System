@@ -55,11 +55,10 @@ public class ServerCore implements Server {
 
 				try {
 					execute(clientSocket);				
-				} catch (IOException i) {
-					i.printStackTrace();
-				} catch (ClassNotFoundException c) {
-					c.printStackTrace();
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
+				
 				clientSocket.close();
 				System.out.println("Closing client socketss");
 			}
@@ -119,7 +118,7 @@ public class ServerCore implements Server {
 		ObjectInputStream o_in = new ObjectInputStream(in);
 		ObjectOutputStream o_out = new ObjectOutputStream(out);
 
-		while(o_in.readObject() != null) {
+		while(o_in.readBoolean()) {
 
 			System.out.println("attemp to read object");
 
