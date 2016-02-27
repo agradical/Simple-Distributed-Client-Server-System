@@ -115,7 +115,7 @@ public class ServerCore implements Server {
 		ObjectInputStream o_in = new ObjectInputStream(in);
 		ObjectOutputStream o_out = new ObjectOutputStream(out);
 		
-		while(!clientSocket.isClosed()) {
+		while(in.read() != -1) {
 
 			System.out.println("attemp to read object");
 
@@ -175,6 +175,7 @@ public class ServerCore implements Server {
 								
 								//closing the socket
 								Message m = new Message();
+								
 								m.setStatusCode(200);
 								o_out.writeObject(m);
 								System.out.println("closing socket");
@@ -205,9 +206,9 @@ public class ServerCore implements Server {
 								}
 							}						
 							//closing the socket
-							System.out.println("closing socket");
+							//System.out.println("closing socket");
 
-							in.close();
+							//in.close();
 						}
 					}			
 				}
