@@ -1,9 +1,11 @@
 package utd.aos.utils;
 
 import java.io.File;
+import java.io.Serializable;
 
-public class Resource {
+public class Resource implements Serializable {
 	
+	private static final long serialVersionUID = 1L;
 	public File file;
 	public String filename;
 	public int seek;
