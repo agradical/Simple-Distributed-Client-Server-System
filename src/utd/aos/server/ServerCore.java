@@ -58,6 +58,7 @@ public class ServerCore implements Server {
 				try {
 					execute(clientSocket);				
 				} catch (Exception e) {
+					e.printStackTrace();
 					System.out.println("Closed socket");
 				}
 				
