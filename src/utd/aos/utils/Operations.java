@@ -6,8 +6,6 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
 
-import utd.aos.server.resources.Resource;
-
 public class Operations implements Serializable{
 
 	private static final long serialVersionUID = 1L;

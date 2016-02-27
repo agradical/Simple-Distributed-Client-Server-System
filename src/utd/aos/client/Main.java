@@ -10,9 +10,9 @@ import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
-import utd.aos.server.resources.Resource;
 import utd.aos.utils.Message;
 import utd.aos.utils.Operations;
+import utd.aos.utils.Resource;
 import utd.aos.utils.Operations.OperationMethod;
 import utd.aos.utils.Operations.OperationType;
 

@@ -11,9 +11,9 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
-import utd.aos.server.resources.Resource;
 import utd.aos.utils.Message;
 import utd.aos.utils.Operations;
+import utd.aos.utils.Resource;
 import utd.aos.utils.Operations.OperationMethod;
 import utd.aos.utils.Operations.OperationType;
 
@@ -58,7 +58,7 @@ public class ServerCore implements Server {
 				try {
 					execute(clientSocket);				
 				} catch (Exception e) {
-					e.printStackTrace();
+					System.out.println("Closed socket");
 				}
 				
 				clientSocket.close();

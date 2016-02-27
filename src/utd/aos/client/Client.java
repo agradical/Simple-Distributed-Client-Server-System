@@ -9,9 +9,9 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
-import utd.aos.server.resources.Resource;
 import utd.aos.utils.Message;
 import utd.aos.utils.Operations;
+import utd.aos.utils.Resource;
 import utd.aos.utils.Operations.OperationMethod;
 
 public class Client {
