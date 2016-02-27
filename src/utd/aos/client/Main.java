@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
+import utd.aos.utils.Message;
 import utd.aos.utils.Operations;
 import utd.aos.utils.Operations.OperationMethod;
 import utd.aos.utils.Operations.OperationType;
@@ -45,16 +46,17 @@ public class Main {
 			Socket socket = new Socket(server, 1717);
 			Client client = new Client();
 			Scanner scan = new Scanner(System.in);
-			
-			while (true) {
-				System.out.println("Select Operation to perform");
+			System.out.println("Select Operation to perform");
 
-				int count = 1;
-				for(OperationMethod method: OperationMethod.values()) {
-					System.out.println(count+") "+method.toString());
-					count++;
-				}
-			
+			int count = 1;
+			for(OperationMethod method: OperationMethod.values()) {
+				System.out.println(count+") "+method.toString());
+				count++;
+			}
+		
+			boolean close = false;
+			while (true) {
+				
 				String input = scan.nextLine();
 				
 				String arg[] = input.split(" ");
@@ -63,7 +65,7 @@ public class Main {
 				try {
 					OperationMethod.valueOf(arg[0]);
 				} catch (Exception e) {
-					System.out.println("Select only listed operations");
+					System.out.println("ERROR: Select only from listed operations");
 					continue;
 				}
 				switch (OperationMethod.valueOf(arg[0])) {
@@ -84,10 +86,13 @@ public class Main {
 						break;
 					case TERMINATE:
 						System.out.println("Good Bye!");
-						System.exit(0);
+						close = true;
 						break;
 				}
 				
+				if(close) {
+					break;
+				}
 				
 				operation.setFilename(arg[1]);
 				
@@ -95,11 +100,11 @@ public class Main {
 					operation.setArg(arg[2]);
 				}
 				
-				operation.setType(OperationType.PERFORM);
-				
-				client.request(socket, operation);
-				
+				operation.setType(OperationType.PERFORM);				
+				Message m = client.request(socket, operation);
+				System.out.println(m.messsage);			
 			}
+			scan.close();
 
 		} catch (IOException e) {
 			e.printStackTrace();

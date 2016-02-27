@@ -118,8 +118,8 @@ public class ServerCore implements Server {
 		
 		ObjectInputStream o_in = new ObjectInputStream(in);
 		ObjectOutputStream o_out = new ObjectOutputStream(out);
-		
-		while(o_in.read() != -1) {
+
+		while(o_in.readObject() != null) {
 
 			System.out.println("attemp to read object");
 
