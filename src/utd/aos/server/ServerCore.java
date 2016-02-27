@@ -53,17 +53,21 @@ public class ServerCore implements Server {
 				Socket clientSocket = serverSocket.accept();
 				System.out.println("Socket accepted");
 
-				execute(clientSocket);				
-
+				try {
+					execute(clientSocket);				
+				} catch (IOException i) {
+					i.printStackTrace();
+				} catch (ClassNotFoundException c) {
+					c.printStackTrace();
+				}
 				clientSocket.close();
 				System.out.println("Closing client socketss");
 			}
 
 		} catch (IOException i) {
 			i.printStackTrace();
-		} catch (ClassNotFoundException c) {
-			c.printStackTrace();
 		}
+		
 		System.out.println("Closing server socketss");
 
 	}
@@ -115,7 +119,7 @@ public class ServerCore implements Server {
 		ObjectInputStream o_in = new ObjectInputStream(in);
 		ObjectOutputStream o_out = new ObjectOutputStream(out);
 		
-		while(in.read() != -1) {
+		while(o_in.read() != -1) {
 
 			System.out.println("attemp to read object");
 
