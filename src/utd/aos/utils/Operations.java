@@ -65,6 +65,7 @@ public class Operations implements Serializable{
 					count--;
 				}
 				m.setStatusCode(200);
+				System.out.println(resource.getSeek() + "  "+result);
 				m.setMesssage(result);
 				file_r.close();
 			} catch (FileNotFoundException f) {
