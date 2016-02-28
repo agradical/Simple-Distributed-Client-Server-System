@@ -2,7 +2,6 @@ package utd.aos.client;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -20,7 +19,7 @@ public class Client {
 			File file = new File(resource.getFilename());
 			if(file.exists()) {
 				//FileInputStream fis = new FileInputStream(file);			
-				String fileContent = null;
+				String fileContent = "";
 				BufferedReader br = new BufferedReader(new FileReader(file));
 				String line = "";
 				while((line = br.readLine()) != null ) {

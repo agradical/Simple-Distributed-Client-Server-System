@@ -1,10 +1,10 @@
 package utd.aos.utils;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.InputStreamReader;
 import java.io.Serializable;
 
 public class Operations implements Serializable{
@@ -57,18 +57,17 @@ public class Operations implements Serializable{
 		else if(this.operation.equals(OperationMethod.READ)) {
 			File file = new File(DATADIRECTORY, resource.getFilename());
 			try {
-				RandomAccessFile file_r = new RandomAccessFile(file, "r");
-				file_r.seek(resource.getSeek());
 				int count = Integer.parseInt(this.getArg());
-				String result = "";
-				while (count > 0) {
-					result += file_r. readChar();
-					count--;
-				}
+				char[] result = new char[count];
+				FileInputStream fis = new FileInputStream(file);
+				InputStreamReader isr = new InputStreamReader(fis);
+				
+				isr.read(result, resource.getSeek(), count);
+				
 				m.setStatusCode(200);
-				System.out.println(resource.getSeek() + "  "+result);
-				m.setMesssage(result);
-				file_r.close();
+				m.setMesssage(result.toString());
+				isr.close();
+				
 			} catch (FileNotFoundException f) {
 				m.setStatusCode(100);
 				m.setMesssage("File not Found");
