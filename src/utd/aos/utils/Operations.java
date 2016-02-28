@@ -118,7 +118,7 @@ public class Operations implements Serializable{
 			
 			if(originalFile.exists() && file.exists()) {
 				try{
-					RandomAccessFile file_r = new RandomAccessFile(file, "w");
+					RandomAccessFile file_r = new RandomAccessFile(file, "rw");
 					file_r.seek(resource.getSeek());
 					byte[] ip_bytes = this.getArg().getBytes();
 					file_r.write(ip_bytes);
