@@ -69,8 +69,9 @@ public class Operations implements Serializable{
 				char[] result = new char[count];
 				FileInputStream fis = new FileInputStream(file);
 				InputStreamReader isr = new InputStreamReader(fis);
-				
-				isr.read(result, resource.getSeek(), count);
+				int offset = resource.getSeek();
+				System.out.println("Seek location" + offset);
+				isr.read(result, offset, count);
 				
 				String output = new String(result);
 				System.out.println(output);
@@ -121,14 +122,14 @@ public class Operations implements Serializable{
 					RandomAccessFile file_r = new RandomAccessFile(file, "rw");
 					int seek = resource.getWriteOffset();
 					file_r.seek(seek);
-					
+					System.out.println("Seek location "+seek);
 					byte[] ip_bytes = this.getArg().getBytes();
 					int nextWriteLocation = this.getArg().length();
 					
 					file_r.write(ip_bytes);
 					file_r.close();
 					resource.setWriteOffset(seek+nextWriteLocation);
-					
+					System.out.println("Seek location changed to "+seek);
 					m.setStatusCode(200);
 					m.setMesssage("File successfully written");
 				} catch (FileNotFoundException e) {
