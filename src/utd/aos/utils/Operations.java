@@ -62,6 +62,7 @@ public class Operations implements Serializable{
 				String result = "";
 				while (count > 0) {
 					result += file_r.readChar();
+					count--;
 				}
 				m.setStatusCode(200);
 				m.setMesssage(result);

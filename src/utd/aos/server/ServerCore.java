@@ -139,6 +139,7 @@ public class ServerCore implements Server {
 				
 				if(operation.getOperation().equals(OperationMethod.TERMINATE)) {
 					in.close();
+					break;
 				}
 				
 				Message perform_message = null;

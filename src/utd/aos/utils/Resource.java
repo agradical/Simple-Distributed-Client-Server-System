@@ -8,7 +8,7 @@ public class Resource implements Serializable {
 	private static final long serialVersionUID = 1L;
 	public File file;
 	public String filename;
-	public int seek;
+	public int seek = 0;
 	public byte[] fileContent;
 	
 	
