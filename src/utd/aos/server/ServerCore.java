@@ -155,12 +155,16 @@ public class ServerCore implements Server {
 					Resource inputResource = operation.getInputResource();
 					String filename = inputResource.getFilename();
 					
-					Resource resource = null;
+					Resource resource = new Resource();
 					if(activeResourceMap.get(filename) != null) {
 						resource = activeResourceMap.get(filename);
 					} else {
 						activeResourceMap.put(filename, resource);
-						resource = inputResource;
+						resource.setFilename(inputResource.getFilename());
+						resource.setSeek(inputResource.getSeek());
+						resource.setWriteOffset(inputResource.getWriteOffset());
+						resource.setFileContent(inputResource.getFileContent());
+
 					}
 					
 					perform_message = operation.perform(this.getDATADIRECTORY(), resource);			
