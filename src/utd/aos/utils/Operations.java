@@ -124,12 +124,13 @@ public class Operations implements Serializable{
 					file_r.seek(seek);
 					System.out.println("Seek location "+seek);
 					byte[] ip_bytes = this.getArg().getBytes();
-					int nextWriteLocation = this.getArg().length();
+					int nextWriteLocation = seek+this.getArg().length();
 					
 					file_r.write(ip_bytes);
 					file_r.close();
-					resource.setWriteOffset(seek+nextWriteLocation);
-					System.out.println("Seek location changed to "+seek);
+					
+					resource.setWriteOffset(nextWriteLocation);
+					System.out.println("Seek location changed to "+ nextWriteLocation);
 					m.setStatusCode(200);
 					m.setMesssage("File successfully written");
 				} catch (FileNotFoundException e) {
