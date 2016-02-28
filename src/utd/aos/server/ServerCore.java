@@ -176,19 +176,20 @@ public class ServerCore implements Server {
 						
 						if(!otherServers.containsKey(clientSocket.getInetAddress())) {					
 							System.out.println("this server is connected with client");
-
-							for (Map.Entry<InetAddress, Integer> entry : otherServers.entrySet()) {						
-								Socket socket = new Socket(entry.getKey(), entry.getValue());
-								
-								OutputStream sock_out = socket.getOutputStream();
-								ObjectOutputStream sock_o_out = new ObjectOutputStream(sock_out);
-								
-								InputStream sock_in = socket.getInputStream();
-								ObjectInputStream sock_o_in = new ObjectInputStream(sock_in);
-								
-								sockets.put(entry.getKey(), new SocketMap(socket, sock_o_out, sock_o_in));
-							}
 							
+							if(sockets.isEmpty()) {
+								for (Map.Entry<InetAddress, Integer> entry : otherServers.entrySet()) {						
+									Socket socket = new Socket(entry.getKey(), entry.getValue());
+
+									OutputStream sock_out = socket.getOutputStream();
+									ObjectOutputStream sock_o_out = new ObjectOutputStream(sock_out);
+
+									InputStream sock_in = socket.getInputStream();
+									ObjectInputStream sock_o_in = new ObjectInputStream(sock_in);
+
+									sockets.put(entry.getKey(), new SocketMap(socket, sock_o_out, sock_o_in));
+								}
+							}
 							System.out.println("attempt to synchronize");
 							Message sync_message  = null;
 							for (Map.Entry<InetAddress, SocketMap> entry : sockets.entrySet()) {
