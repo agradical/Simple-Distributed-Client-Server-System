@@ -168,13 +168,14 @@ public class Operations implements Serializable{
 			File tmp_file =  new File(DATADIRECTORY, "."+resource.getFilename()+".tmp");
 			if(tmp_file.exists()) {
 				File file = new File(DATADIRECTORY, resource.getFilename());
-				if(file.exists()) {
-					file.delete();
+				if(file.exists()) {				
+					file.delete();		
 				}
 				tmp_file.renameTo(file);
+				m.setStatusCode(200);
+				m.setMesssage("Commited successully");
 			}
-		}
-			
+		}		
 		return m;
 	}
 
