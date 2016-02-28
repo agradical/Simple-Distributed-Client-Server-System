@@ -39,7 +39,10 @@ public class Operations implements Serializable{
 				File dir = new File(DATADIRECTORY);
 				if(!dir.exists()) {
 					dir.mkdirs();
-				}			
+				}
+				
+				//Creating tmp file initially and upon receiving commit signal later
+				//will finally commit the changes
 				File file =  new File(DATADIRECTORY, "."+resource.getFilename()+".tmp");
 				try {
 					file.createNewFile();
@@ -172,6 +175,8 @@ public class Operations implements Serializable{
 				m.setStatusCode(200);
 				m.setMesssage("Commited successully");
 			} else {
+				
+				//Finally commit the changes
 				File tmp_file =  new File(DATADIRECTORY, "."+resource.getFilename()+".tmp");
 				if(tmp_file.exists()) {
 					File file = new File(DATADIRECTORY, resource.getFilename());

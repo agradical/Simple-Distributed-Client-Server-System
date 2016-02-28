@@ -27,20 +27,24 @@ public class Main {
 		File file = new File(filename);
 		
 		String server = "";
-		
+		int port = 0;
 		if(file.exists()) {
 			BufferedReader br = new BufferedReader(new FileReader(file));
 			List<String> serverlist = new ArrayList<String>();
 			String _servers = "";
 			while((_servers = br.readLine()) != null) {
-				String _server = _servers.split(" ")[0];
+				String _server = _servers;
 				serverlist.add(_server);
 			}
 			br.close();
+			
+			//Select random server from list to connect
 			Random rand = new Random();
 			Integer id = rand.nextInt(serverlist.size());
 			
-			server = serverlist.get(id);
+			server = serverlist.get(id).split(" ")[0];
+			port = Integer.parseInt(serverlist.get(id).split(" ")[1]);
+			
 			if(server.equals("")) {
 				throw new Exception("No Host found");
 			}
@@ -48,13 +52,14 @@ public class Main {
 		
 		try {
 
-			Socket socket = new Socket(server, 1717);
+			Socket socket = new Socket(server, port);
 			
 			OutputStream out = socket.getOutputStream();
 			ObjectOutputStream o_out = new ObjectOutputStream(out);
 			InputStream in = socket.getInputStream();
 			ObjectInputStream o_in = new ObjectInputStream(in);
 			
+			//Create client
 			Client client = new Client();
 			Scanner scan = new Scanner(System.in);
 			System.out.println("Select Operation to perform");

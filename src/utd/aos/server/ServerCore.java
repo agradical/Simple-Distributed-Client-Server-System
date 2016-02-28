@@ -50,28 +50,20 @@ public class ServerCore implements Server {
 		ServerSocket serverSocket = null;
 		try {
 			serverSocket = new ServerSocket(this.getPort());
-			System.out.println("Socket created");
 			while(true) {
+				//Accepting the client connection
 				Socket clientSocket = serverSocket.accept();
-				System.out.println("Socket accepted");
-
 				try {
 					execute(clientSocket);				
 				} catch (Exception e) {
 					e.printStackTrace();
-					System.out.println("Closed socket");
-				}
-				
+				}				
 				clientSocket.close();
-				System.out.println("Closing client socketss");
 			}
 
 		} catch (IOException i) {
 			i.printStackTrace();
 		}
-		
-		System.out.println("Closing server socketss");
-
 	}
 	
 	class SocketMap {
@@ -124,12 +116,12 @@ public class ServerCore implements Server {
 
 		while(!clientSocket.isClosed()) {
 
-			System.out.println("attemp to read object");
-
 			Object object = null;
 			try {
+				//Reading Object stream
 				object = o_in.readObject();
 			} catch (Exception e) {
+				//Closing connection with other servers in case of termination from client
 				if(!sockets.isEmpty()) {
 					for (Map.Entry<InetAddress, SocketMap> entry : sockets.entrySet()) {
 						entry.getValue().getO_out().close();
@@ -137,15 +129,15 @@ public class ServerCore implements Server {
 				}
 				break;
 			}
+			
 			Operations operation = null;
-
+			//Checking if Object received is of type Operations
 			if (object instanceof Operations) {
 				operation = (Operations)object;
-				System.out.println("got object");
 			}
 
 			if (operation != null) {
-				
+				//In case of Termination from client close connections with other servers
 				if(operation.getOperation().equals(OperationMethod.TERMINATE)) {
 					in.close();
 					if(!sockets.isEmpty()) {
@@ -157,18 +149,17 @@ public class ServerCore implements Server {
 				}
 				
 				Message perform_message = null;
-				boolean sync_status = true;
-
-				System.out.println("object not null");
+				boolean sync_status = true;	
 				
-				
+				//Operation can be either to perform locally or signal to commit
+				//after performed on every server
 				if (operation.getType().equals(OperationType.PERFORM)) {
-					
-					System.out.println("checking operation perform");
-					
+										
 					Resource inputResource = operation.getInputResource();
 					String filename = inputResource.getFilename();
 					
+					//Keeping ResourceMap active for a particular session
+					//and Update in case of new Seek position update
 					Resource resource = new Resource();
 					if(activeResourceMap.get(filename) != null) {
 						resource = activeResourceMap.get(filename);
@@ -178,23 +169,21 @@ public class ServerCore implements Server {
 						resource.setSeek(inputResource.getSeek());
 						resource.setWriteOffset(inputResource.getWriteOffset());
 						resource.setFileContent(inputResource.getFileContent());
-
 					}
 					
 					perform_message = operation.perform(this.getDATADIRECTORY(), resource);			
 					
 					if (perform_message.getStatusCode() == 200) {
-						System.out.println("perform success");
-
 						if(operation.getOperation().equals(OperationMethod.READ)) {
 							perform_message.setServerId(ip.getHostName());
 							o_out.writeObject(perform_message);
 							continue;
 						}
 						
-						if(!otherServers.containsKey(clientSocket.getInetAddress())) {					
-							System.out.println("this server is connected with client");
-							
+						//Checking if the server is connected with client
+						//If connected with client this server will be responsible to sync the operation.
+						//So creating connections with other servers
+						if(!otherServers.containsKey(clientSocket.getInetAddress())) {												
 							if(sockets.isEmpty()) {
 								for (Map.Entry<InetAddress, Integer> entry : otherServers.entrySet()) {						
 									Socket socket = new Socket(entry.getKey(), entry.getValue());
@@ -208,7 +197,8 @@ public class ServerCore implements Server {
 									sockets.put(entry.getKey(), new SocketMap(socket, sock_o_out, sock_o_in));
 								}
 							}
-							System.out.println("attempt to synchronize");
+							
+							//Attempt to synchronize the operation
 							Message sync_message  = null;
 							for (Map.Entry<InetAddress, SocketMap> entry : sockets.entrySet()) {
 								sync_message = synchronize(operation, entry.getValue().getO_in(), entry.getValue().getO_out());
@@ -217,10 +207,9 @@ public class ServerCore implements Server {
 								}
 							}
 							
-
 							if (sync_status) {
-								System.out.println("all sync");
-
+								//If Synced to all servers send commit signal to all servers
+								//to finally commit the operation
 								operation.commit(this.getDATADIRECTORY(), resource);
 								Operations commit_op = new Operations();
 								commit_op.setType(OperationType.COMMIT);
@@ -233,6 +222,7 @@ public class ServerCore implements Server {
 									}
 								}
 								
+								//Send response back to Client
 								if(!sync_status) {
 									sync_message.setServerId(ip.getHostName());
 									o_out.writeObject(sync_message);
@@ -240,25 +230,22 @@ public class ServerCore implements Server {
 									perform_message.setServerId(ip.getHostName());
 									o_out.writeObject(perform_message);
 								}
-								//System.out.println("closing socket");
 							} else {
 								sync_message.setServerId(ip.getHostName());
 								o_out.writeObject(sync_message);
 							}
 						} else {
+							
+							//If not connected with client 
 							//sends back the success signal
 							Message m = new Message();
 							m.setStatusCode(200);
 							m.setServerId(ip.getHostName());
 							o_out.writeObject(m);
 							
-							System.out.println("not connected with client so returning message");
-
-							
-							//and wait for commit signal
+							//wait for commit signal
 							object = o_in.readObject();
 							if (object instanceof Operations) {
-								System.out.println("commit signal");
 								Operations op = (Operations)object;
 								System.out.println(op.getType().toString());
 								if(op.getType().equals(OperationType.COMMIT)) {
@@ -267,13 +254,8 @@ public class ServerCore implements Server {
 									m.setStatusCode(200);
 									m.setServerId(ip.getHostName());
 									o_out.writeObject(m);
-									System.out.println("commited");
 								}
-							}						
-							//closing the socket
-							//System.out.println("closing socket");
-
-							//in.close();
+							}
 						}
 					}
 					else {
@@ -283,24 +265,20 @@ public class ServerCore implements Server {
 				}
 			}
 		}
-		
-		System.out.println("closing server socket");
-
 	}
 
 	public Message synchronize(Operations operation, ObjectInputStream o_in, ObjectOutputStream o_out) throws IOException, ClassNotFoundException {
+		
 		//send operation to other servers
 		System.out.println("synchronize to other servers");	
 		o_out.writeObject(operation);
 		
-		//wait for their status		
+		//wait for their ACK		
 		Object object = o_in.readObject();
 		
-		Message m = null;
-		
+		Message m = null;		
 		if (object instanceof Message) {
 			m = (Message)object;
-			System.out.println( "got ack");
 			return m;			
 		} else {
 			return null;

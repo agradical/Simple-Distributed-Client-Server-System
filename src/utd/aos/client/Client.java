@@ -13,12 +13,11 @@ import utd.aos.utils.Operations.OperationMethod;
 
 public class Client {
 	public Message request(Operations operation, ObjectOutputStream o_out, ObjectInputStream o_in) throws IOException, ClassNotFoundException {	
-		
+		//creating the request
 		if(operation.getOperation().equals(OperationMethod.CREATE)) {
 			Resource resource = operation.getInputResource();
 			File file = new File(resource.getFilename());
 			if(file.exists()) {
-				//FileInputStream fis = new FileInputStream(file);			
 				String fileContent = "";
 				BufferedReader br = new BufferedReader(new FileReader(file));
 				String line = "";
@@ -32,9 +31,10 @@ public class Client {
 			}
 		}
 		
+		//sends the operation resquest
 		o_out.writeObject(operation);
 		
-		//wait for their status
+		//wait for the response
 		Object object = o_in.readObject();
 		
 		

@@ -14,11 +14,12 @@ import java.util.concurrent.Executors;
 
 public class Main {
 	
+	//Executor service to handle multiple clients
 	public static final int NTHREADS = 20;
     public static final ExecutorService exec = Executors.newFixedThreadPool(NTHREADS);
-
-    
+  
 	public static void main(String[] args) {
+		//List of server with their Hostname and port
 		String filename = "server.list";
 		if(args.length != 0) {		
 			filename = args[0];
@@ -42,6 +43,8 @@ public class Main {
 			Server myServer = new ServerCore();
 			InetSocketAddress myinet = null;
 			
+			//Comparing the Hostname with localhost name
+			//Add the other server information.
 			for(InetSocketAddress addr: server_ips) {
 				if(addr.getHostName().equals(InetAddress.getLocalHost().getHostName())) {
 					myServer.setServer(addr.getAddress(), addr.getPort());
@@ -51,6 +54,8 @@ public class Main {
 				}
 			}
 			
+			//server.configuration file to mention the data directory and 
+			//other configuration parameters for server
 			String conf_filename = "server.configuration";
 			File conf_file = new File(conf_filename);	
 			BufferedReader conf_br = new BufferedReader(new FileReader(conf_file));
