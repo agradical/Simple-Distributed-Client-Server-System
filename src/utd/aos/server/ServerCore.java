@@ -221,7 +221,7 @@ public class ServerCore implements Server {
 								}
 								//System.out.println("closing socket");
 							}
-							o_out.writeObject(sync_message);
+							//o_out.writeObject(sync_message);
 							
 						} else {
 							//sends back the success signal
