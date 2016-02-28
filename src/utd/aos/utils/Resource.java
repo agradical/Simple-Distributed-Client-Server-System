@@ -9,7 +9,7 @@ public class Resource implements Serializable {
 	public File file;
 	public String filename;
 	public int seek = 0;
-	public byte[] fileContent;
+	public String fileContent;
 	
 	
 	public File getFile() {
@@ -30,11 +30,10 @@ public class Resource implements Serializable {
 	public void setSeek(int seek) {
 		this.seek = seek;
 	}
-	
-	public byte[] getFileContent() {
+	public String getFileContent() {
 		return fileContent;
 	}
-	public void setFileContent(byte[] fileContent) {
+	public void setFileContent(String fileContent) {
 		this.fileContent = fileContent;
 	}
 	

@@ -2,6 +2,7 @@ package utd.aos.utils;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
@@ -41,9 +42,9 @@ public class Operations implements Serializable{
 				File file =  new File(DATADIRECTORY, "."+resource.getFilename()+".tmp");
 				try {
 					file.createNewFile();
-					FileOutputStream fos = new FileOutputStream(file);
-					fos.write(resource.getFileContent());
-					fos.close();
+					FileWriter fw = new FileWriter(file);
+					fw.write(resource.getFileContent());
+					fw.close();
 					m.setStatusCode(200);
 					m.setMesssage("File creation successful");
 				} catch (IOException e) {
@@ -61,7 +62,7 @@ public class Operations implements Serializable{
 				int count = Integer.parseInt(this.getArg());
 				String result = "";
 				while (count > 0) {
-					result += file_r.readChar();
+					result += file_r. readChar();
 					count--;
 				}
 				m.setStatusCode(200);
