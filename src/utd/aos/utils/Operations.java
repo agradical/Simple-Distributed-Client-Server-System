@@ -6,7 +6,6 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
@@ -65,20 +64,18 @@ public class Operations implements Serializable{
 		else if(this.operation.equals(OperationMethod.READ)) {
 			File file = new File(DATADIRECTORY, resource.getFilename());
 			try {
+				RandomAccessFile file_r = new RandomAccessFile(file, "r");
 				int count = Integer.parseInt(this.getArg());
-				char[] result = new char[count];
-				FileInputStream fis = new FileInputStream(file);
-				InputStreamReader isr = new InputStreamReader(fis);
-				int offset = resource.getSeek();
-				System.out.println("Seek location" + offset);
-				isr.read(result, offset, count);
-				
-				String output = new String(result);
-				System.out.println(output);
-				
+				int seek = resource.getSeek();
+				file_r.seek(seek);
+				String output = "";
+				while(count > 0) {
+					output += (char)file_r.read();
+					count--;
+				}
+				file_r.close();
 				m.setStatusCode(200);
 				m.setMesssage(output);
-				isr.close();			
 			} catch (FileNotFoundException f) {
 				m.setStatusCode(100);
 				m.setMesssage("File not Found");
