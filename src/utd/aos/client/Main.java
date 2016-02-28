@@ -109,7 +109,7 @@ public class Main {
 				}
 				Resource resource = new Resource();
 				resource.setFilename(arg[1]);
-				operation.setResource(resource);
+				operation.setInputResource(resource);
 				
 				if(arg.length > 2) {
 					operation.setArg(arg[2]);

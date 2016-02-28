@@ -15,7 +15,7 @@ public class Client {
 	public Message request(Operations operation, ObjectOutputStream o_out, ObjectInputStream o_in) throws IOException, ClassNotFoundException {	
 		
 		if(operation.getOperation().equals(OperationMethod.CREATE)) {
-			Resource resource = operation.getResource();
+			Resource resource = operation.getInputResource();
 			File file = new File(resource.getFilename());
 			if(file.exists()) {
 				//FileInputStream fis = new FileInputStream(file);			
@@ -28,7 +28,7 @@ public class Client {
 				resource.setFileContent(fileContent);
 				br.close();
 				
-				operation.setResource(resource);
+				operation.setInputResource(resource);
 			}
 		}
 		

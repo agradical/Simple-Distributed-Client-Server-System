@@ -152,13 +152,15 @@ public class ServerCore implements Server {
 					
 					System.out.println("checking operation perform");
 					
-					Resource inputResource = operation.getResource();
+					Resource inputResource = operation.getInputResource();
 					String filename = inputResource.getFilename();
-					Resource resource = inputResource;
+					
+					Resource resource = null;
 					if(activeResourceMap.get(filename) != null) {
 						resource = activeResourceMap.get(filename);
 					} else {
 						activeResourceMap.put(filename, resource);
+						resource = inputResource;
 					}
 					
 					perform_message = operation.perform(this.getDATADIRECTORY(), resource);			
@@ -200,7 +202,7 @@ public class ServerCore implements Server {
 							if (sync_status) {
 								System.out.println("all sync");
 
-								operation.commit(this.getDATADIRECTORY());
+								operation.commit(this.getDATADIRECTORY(), resource);
 								Operations commit_op = new Operations();
 								commit_op.setType(OperationType.COMMIT);
 								System.out.println(commit_op.getType().toString());
@@ -237,7 +239,7 @@ public class ServerCore implements Server {
 								Operations op = (Operations)object;
 								System.out.println(op.getType().toString());
 								if(op.getType().equals(OperationType.COMMIT)) {
-									operation.commit(this.getDATADIRECTORY());
+									operation.commit(this.getDATADIRECTORY(), resource);
 									m = new Message();
 									m.setStatusCode(200);
 									o_out.writeObject(m);

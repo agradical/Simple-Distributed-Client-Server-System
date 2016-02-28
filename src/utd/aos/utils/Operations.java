@@ -28,13 +28,12 @@ public class Operations implements Serializable{
 
 	public String arg;
 	
-	public Resource resource;
+	public Resource inputResource;
 	
 	//Perform the operation
 	public Message perform(String DATADIRECTORY, Resource resource) {
 		
 		Message m = new Message();
-		this.setResource(resource);	
 		
 		if(this.operation.equals(OperationMethod.CREATE)) {
 			if(resource.getFileContent() != null) {
@@ -57,7 +56,12 @@ public class Operations implements Serializable{
 				}
 			}
 		}
-		
+		else if(this.operation.equals(OperationMethod.SEEK)) {
+			int seek = this.getInputResource().getSeek();
+			resource.setSeek(seek);
+			m.setStatusCode(200);
+			m.setMesssage("File pointer moved to "+seek+" position");
+		}
 		else if(this.operation.equals(OperationMethod.READ)) {
 			File file = new File(DATADIRECTORY, resource.getFilename());
 			try {
@@ -68,10 +72,12 @@ public class Operations implements Serializable{
 				
 				isr.read(result, resource.getSeek(), count);
 				
-				m.setStatusCode(200);
-				m.setMesssage(new String(result));
-				isr.close();
+				String output = new String(result);
+				System.out.println(output);
 				
+				m.setStatusCode(200);
+				m.setMesssage(output);
+				isr.close();			
 			} catch (FileNotFoundException f) {
 				m.setStatusCode(100);
 				m.setMesssage("File not Found");
@@ -108,9 +114,6 @@ public class Operations implements Serializable{
 					m.setMesssage("File cannot be written");
 					e.printStackTrace();
 				}
-			} else {
-				m.setStatusCode(100);
-				m.setMesssage("Previous operation not comitted yet");
 			}
 			
 			if(originalFile.exists() && file.exists()) {
@@ -120,6 +123,8 @@ public class Operations implements Serializable{
 					byte[] ip_bytes = this.getArg().getBytes();
 					file_r.write(ip_bytes);
 					file_r.close();
+					m.setStatusCode(200);
+					m.setMesssage("File successfully written");
 				} catch (FileNotFoundException e) {
 					m.setStatusCode(100);
 					m.setMesssage("File not Found");
@@ -144,12 +149,12 @@ public class Operations implements Serializable{
 	}
 
 	//Commit and send signal to commit operation.
-	public Message commit(String DATADIRECTORY) {
+	public Message commit(String DATADIRECTORY, Resource resource) {
 		
 		Message m = new Message();
 		
 		if(this.operation.equals(OperationMethod.DELETE)) {
-			File file = new File(DATADIRECTORY, this.resource.getFilename());
+			File file = new File(DATADIRECTORY, resource.getFilename());
 			if(file.exists()) {
 				file.delete();
 				m.setStatusCode(200);
@@ -160,9 +165,9 @@ public class Operations implements Serializable{
 			}
 		}
 		else {
-			File tmp_file =  new File(DATADIRECTORY, "."+this.resource.getFilename()+".tmp");
+			File tmp_file =  new File(DATADIRECTORY, "."+resource.getFilename()+".tmp");
 			if(tmp_file.exists()) {
-				File file = new File(DATADIRECTORY, this.resource.getFilename());
+				File file = new File(DATADIRECTORY, resource.getFilename());
 				if(file.exists()) {
 					file.delete();
 				}
@@ -195,11 +200,11 @@ public class Operations implements Serializable{
 		this.type = type;
 	}
 
-	public Resource getResource() {
-		return resource;
+	public Resource getInputResource() {
+		return this.inputResource;
 	}
 
-	public void setResource(Resource resource) {
-		this.resource = resource;
+	public void setInputResource(Resource resource) {
+		this.inputResource = resource;
 	}
 }
