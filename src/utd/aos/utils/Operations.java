@@ -91,6 +91,11 @@ public class Operations implements Serializable{
 		else if(this.operation.equals(OperationMethod.WRITE)) {
 			File originalFile = new File(DATADIRECTORY, resource.getFilename());
 			File file =  new File(DATADIRECTORY, "."+resource.getFilename()+".tmp");
+			if (!originalFile.exists()) {
+				m.setStatusCode(100);
+				m.setMesssage("ERROR -- "+resource.getFilename()+" does not exist");
+				return m;
+			}
 			if(!file.exists()) {
 				InputStream inStream = null;
 				OutputStream outStream = null;

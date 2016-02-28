@@ -50,9 +50,11 @@ public class ServerCore implements Server {
 		ServerSocket serverSocket = null;
 		try {
 			serverSocket = new ServerSocket(this.getPort());
+			System.out.println("--Server started--");
 			while(true) {
 				//Accepting the client connection
 				Socket clientSocket = serverSocket.accept();
+				System.out.println("--Client connected--");
 				try {
 					execute(clientSocket);				
 				} catch (Exception e) {
@@ -119,9 +121,11 @@ public class ServerCore implements Server {
 			Object object = null;
 			try {
 				//Reading Object stream
+				System.out.println("---------------------------");
 				object = o_in.readObject();
 			} catch (Exception e) {
 				//Closing connection with other servers in case of termination from client
+				System.out.println("--Closing connection--");
 				if(!sockets.isEmpty()) {
 					for (Map.Entry<InetAddress, SocketMap> entry : sockets.entrySet()) {
 						entry.getValue().getO_out().close();
@@ -137,7 +141,9 @@ public class ServerCore implements Server {
 			}
 
 			if (operation != null) {
+				System.out.println("--Closing connection--");
 				//In case of Termination from client close connections with other servers
+				//Line added for graceful termination
 				if(operation.getOperation().equals(OperationMethod.TERMINATE)) {
 					in.close();
 					if(!sockets.isEmpty()) {
@@ -154,7 +160,9 @@ public class ServerCore implements Server {
 				//Operation can be either to perform locally or signal to commit
 				//after performed on every server
 				if (operation.getType().equals(OperationType.PERFORM)) {
-										
+					
+					System.out.println(operation.getOperation().toString()+ " Request");
+					
 					Resource inputResource = operation.getInputResource();
 					String filename = inputResource.getFilename();
 					
@@ -199,6 +207,7 @@ public class ServerCore implements Server {
 							}
 							
 							//Attempt to synchronize the operation
+							
 							Message sync_message  = null;
 							for (Map.Entry<InetAddress, SocketMap> entry : sockets.entrySet()) {
 								sync_message = synchronize(operation, entry.getValue().getO_in(), entry.getValue().getO_out());
@@ -208,12 +217,13 @@ public class ServerCore implements Server {
 							}
 							
 							if (sync_status) {
+								
 								//If Synced to all servers send commit signal to all servers
 								//to finally commit the operation
+								System.out.println("--Operation Synced successfully--");
 								operation.commit(this.getDATADIRECTORY(), resource);
 								Operations commit_op = new Operations();
 								commit_op.setType(OperationType.COMMIT);
-								System.out.println(commit_op.getType().toString());
 								
 								for (Map.Entry<InetAddress, SocketMap> entry : sockets.entrySet()) {						
 									sync_message = synchronize(commit_op, entry.getValue().getO_in(), entry.getValue().getO_out());
@@ -227,6 +237,7 @@ public class ServerCore implements Server {
 									sync_message.setServerId(ip.getHostName());
 									o_out.writeObject(sync_message);
 								} else {
+									System.out.println("--Operation committed--");
 									perform_message.setServerId(ip.getHostName());
 									o_out.writeObject(perform_message);
 								}
@@ -270,7 +281,6 @@ public class ServerCore implements Server {
 	public Message synchronize(Operations operation, ObjectInputStream o_in, ObjectOutputStream o_out) throws IOException, ClassNotFoundException {
 		
 		//send operation to other servers
-		System.out.println("synchronize to other servers");	
 		o_out.writeObject(operation);
 		
 		//wait for their ACK		
