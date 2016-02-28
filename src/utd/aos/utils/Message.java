@@ -7,15 +7,9 @@ public class Message implements Serializable {
 	private static final long serialVersionUID = 1123123L;
 	
 	public int statusCode;
-	public String status;
 	public String messsage;	
+	public String serverId;
 	
-	public String getStatus() {
-		return status;
-	}
-	public void setStatus(String status) {
-		this.status = status;
-	}
 	public int getStatusCode() {
 		return statusCode;
 	}
@@ -27,6 +21,12 @@ public class Message implements Serializable {
 	}
 	public void setMesssage(String messsage) {
 		this.messsage = messsage;
+	}
+	public String getServerId() {
+		return serverId;
+	}
+	public void setServerId(String serverId) {
+		this.serverId = serverId;
 	}
 
 }

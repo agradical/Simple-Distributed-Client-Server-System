@@ -126,8 +126,17 @@ public class ServerCore implements Server {
 
 			System.out.println("attemp to read object");
 
-			Object object = o_in.readObject();
-
+			Object object = null;
+			try {
+				object = o_in.readObject();
+			} catch (Exception e) {
+				if(!sockets.isEmpty()) {
+					for (Map.Entry<InetAddress, SocketMap> entry : sockets.entrySet()) {
+						entry.getValue().getO_out().close();
+					}
+				}
+				break;
+			}
 			Operations operation = null;
 
 			if (object instanceof Operations) {
@@ -139,6 +148,11 @@ public class ServerCore implements Server {
 				
 				if(operation.getOperation().equals(OperationMethod.TERMINATE)) {
 					in.close();
+					if(!sockets.isEmpty()) {
+						for (Map.Entry<InetAddress, SocketMap> entry : sockets.entrySet()) {
+							entry.getValue().getO_out().close();
+						}
+					}
 					break;
 				}
 				
@@ -169,11 +183,11 @@ public class ServerCore implements Server {
 					
 					perform_message = operation.perform(this.getDATADIRECTORY(), resource);			
 					
-					
 					if (perform_message.getStatusCode() == 200) {
 						System.out.println("perform success");
 
 						if(operation.getOperation().equals(OperationMethod.READ)) {
+							perform_message.setServerId(ip.getHostName());
 							o_out.writeObject(perform_message);
 							continue;
 						}
@@ -220,18 +234,22 @@ public class ServerCore implements Server {
 								}
 								
 								if(!sync_status) {
+									sync_message.setServerId(ip.getHostName());
 									o_out.writeObject(sync_message);
 								} else {
+									perform_message.setServerId(ip.getHostName());
 									o_out.writeObject(perform_message);
 								}
 								//System.out.println("closing socket");
+							} else {
+								sync_message.setServerId(ip.getHostName());
+								o_out.writeObject(sync_message);
 							}
-							//o_out.writeObject(sync_message);
-							
 						} else {
 							//sends back the success signal
 							Message m = new Message();
 							m.setStatusCode(200);
+							m.setServerId(ip.getHostName());
 							o_out.writeObject(m);
 							
 							System.out.println("not connected with client so returning message");
@@ -247,6 +265,7 @@ public class ServerCore implements Server {
 									operation.commit(this.getDATADIRECTORY(), resource);
 									m = new Message();
 									m.setStatusCode(200);
+									m.setServerId(ip.getHostName());
 									o_out.writeObject(m);
 									System.out.println("commited");
 								}
@@ -258,6 +277,7 @@ public class ServerCore implements Server {
 						}
 					}
 					else {
+						perform_message.setServerId(ip.getHostName());
 						o_out.writeObject(perform_message);
 					}
 				}

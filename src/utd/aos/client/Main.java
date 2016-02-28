@@ -71,7 +71,7 @@ public class Main {
 				String input = scan.nextLine();
 				
 				String arg[] = input.split(" ");
-				if(arg.length <2) {
+				if(arg.length < 1) {
 					System.out.println("Please write valid command or argument");
 					continue;
 				}
@@ -117,7 +117,7 @@ public class Main {
 							
 				operation.setType(OperationType.PERFORM);				
 				Message m = client.request(operation, o_out, o_in);
-				System.out.println(m.messsage);			
+				System.out.println(m.getServerId()+" :: "+m.messsage);			
 			}
 			scan.close();
 			socket.close();

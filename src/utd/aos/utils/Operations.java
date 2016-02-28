@@ -47,10 +47,10 @@ public class Operations implements Serializable{
 					fw.write(resource.getFileContent());
 					fw.close();
 					m.setStatusCode(200);
-					m.setMesssage("File creation successful");
+					m.setMesssage(resource.getFilename()+" created successfully");
 				} catch (IOException e) {
 					m.setStatusCode(100);
-					m.setMesssage("File creation failed");
+					m.setMesssage("ERROR --"+resource.getFilename()+" file creation failed");
 				}
 			}
 		}
@@ -59,7 +59,7 @@ public class Operations implements Serializable{
 			resource.setSeek(seek);
 			resource.setWriteOffset(seek);
 			m.setStatusCode(200);
-			m.setMesssage("File pointer moved to "+seek+" position");
+			m.setMesssage("Cursor moved to "+seek+" index in "+resource.getFilename());
 		}
 		else if(this.operation.equals(OperationMethod.READ)) {
 			File file = new File(DATADIRECTORY, resource.getFilename());
@@ -78,10 +78,10 @@ public class Operations implements Serializable{
 				m.setMesssage(output);
 			} catch (FileNotFoundException f) {
 				m.setStatusCode(100);
-				m.setMesssage("File not Found");
+				m.setMesssage("ERROR -- "+resource.getFilename()+" does not exist");
 			} catch (IOException i) {
 				m.setStatusCode(100);
-				m.setMesssage("File not Found");
+				m.setMesssage("ERROR -- "+resource.getFilename()+" IO Exception");
 			}
 		}
 		
@@ -109,7 +109,7 @@ public class Operations implements Serializable{
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					m.setStatusCode(100);
-					m.setMesssage("File cannot be written");
+					m.setMesssage("ERROR writing in file "+resource.getFilename());
 					e.printStackTrace();
 				}
 			}
@@ -119,7 +119,6 @@ public class Operations implements Serializable{
 					RandomAccessFile file_r = new RandomAccessFile(file, "rw");
 					int seek = resource.getWriteOffset();
 					file_r.seek(seek);
-					System.out.println("Seek location "+seek);
 					byte[] ip_bytes = this.getArg().getBytes();
 					int nextWriteLocation = seek+this.getArg().length();
 					
@@ -127,16 +126,15 @@ public class Operations implements Serializable{
 					file_r.close();
 					
 					resource.setWriteOffset(nextWriteLocation);
-					System.out.println("Seek location changed to "+ nextWriteLocation);
 					m.setStatusCode(200);
-					m.setMesssage("File successfully written");
+					m.setMesssage("A string is written in "+resource.getFilename());
 				} catch (FileNotFoundException e) {
 					m.setStatusCode(100);
-					m.setMesssage("File not Found");
+					m.setMesssage("ERROR -- "+resource.getFilename()+" does not exist");
 					e.printStackTrace();
 				} catch (IOException i) {
 					m.setStatusCode(100);
-					m.setMesssage("File not Found");
+					m.setMesssage("ERROR writing in file "+resource.getFilename());
 					i.printStackTrace();
 				}
 			}
@@ -146,7 +144,7 @@ public class Operations implements Serializable{
 			File file = new File(DATADIRECTORY, resource.getFilename() );
 			if (file.exists()) {
 				m.setStatusCode(200);
-				m.setMesssage("File deletion successful");
+				m.setMesssage(resource.getFilename() + " deleted successfully");
 			}
 		}
 		
@@ -166,7 +164,7 @@ public class Operations implements Serializable{
 				m.setMesssage("File Deletion Operation Committed successfully");
 			} else {
 				m.setStatusCode(100);
-				m.setMesssage("File doesnot exists");
+				m.setMesssage("File does not exists");
 			}
 		}
 		else {
