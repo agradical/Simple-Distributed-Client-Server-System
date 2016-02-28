@@ -40,8 +40,7 @@ public class Operations implements Serializable{
 				File dir = new File(DATADIRECTORY);
 				if(!dir.exists()) {
 					dir.mkdirs();
-				}
-				
+				}			
 				File file =  new File(DATADIRECTORY, "."+resource.getFilename()+".tmp");
 				try {
 					file.createNewFile();
@@ -57,8 +56,9 @@ public class Operations implements Serializable{
 			}
 		}
 		else if(this.operation.equals(OperationMethod.SEEK)) {
-			int seek = this.getInputResource().getSeek();
+			int seek = Integer.parseInt(this.getArg());
 			resource.setSeek(seek);
+			resource.setWriteOffset(seek);
 			m.setStatusCode(200);
 			m.setMesssage("File pointer moved to "+seek+" position");
 		}
@@ -119,10 +119,16 @@ public class Operations implements Serializable{
 			if(originalFile.exists() && file.exists()) {
 				try{
 					RandomAccessFile file_r = new RandomAccessFile(file, "rw");
-					file_r.seek(resource.getSeek());
+					int seek = resource.getWriteOffset();
+					file_r.seek(seek);
+					
 					byte[] ip_bytes = this.getArg().getBytes();
+					int nextWriteLocation = this.getArg().length();
+					
 					file_r.write(ip_bytes);
 					file_r.close();
+					resource.setWriteOffset(seek+nextWriteLocation);
+					
 					m.setStatusCode(200);
 					m.setMesssage("File successfully written");
 				} catch (FileNotFoundException e) {
@@ -139,7 +145,7 @@ public class Operations implements Serializable{
 		
 		else if(this.operation.equals(OperationMethod.DELETE)) {
 			File file = new File(DATADIRECTORY, resource.getFilename() );
-			if (file.exists()){
+			if (file.exists()) {
 				m.setStatusCode(200);
 				m.setMesssage("File deletion successful");
 			}
@@ -165,15 +171,20 @@ public class Operations implements Serializable{
 			}
 		}
 		else {
-			File tmp_file =  new File(DATADIRECTORY, "."+resource.getFilename()+".tmp");
-			if(tmp_file.exists()) {
-				File file = new File(DATADIRECTORY, resource.getFilename());
-				if(file.exists()) {				
-					file.delete();		
-				}
-				tmp_file.renameTo(file);
+			if(this.operation.equals(OperationMethod.SEEK)) {
 				m.setStatusCode(200);
 				m.setMesssage("Commited successully");
+			} else {
+				File tmp_file =  new File(DATADIRECTORY, "."+resource.getFilename()+".tmp");
+				if(tmp_file.exists()) {
+					File file = new File(DATADIRECTORY, resource.getFilename());
+					if(file.exists()) {				
+						file.delete();		
+					}
+					tmp_file.renameTo(file);
+					m.setStatusCode(200);
+					m.setMesssage("Commited successully");
+				}
 			}
 		}		
 		return m;

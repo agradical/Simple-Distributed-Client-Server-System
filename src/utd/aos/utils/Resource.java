@@ -6,9 +6,11 @@ import java.io.Serializable;
 public class Resource implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
+	
 	public File file;
 	public String filename;
 	public int seek = 0;
+	public int writeOffset = 0;
 	public String fileContent;
 	
 	
@@ -35,6 +37,12 @@ public class Resource implements Serializable {
 	}
 	public void setFileContent(String fileContent) {
 		this.fileContent = fileContent;
+	}
+	public int getWriteOffset() {
+		return writeOffset;
+	}
+	public void setWriteOffset(int writeOffset) {
+		this.writeOffset = writeOffset;
 	}
 	
 }
