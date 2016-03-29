@@ -108,12 +108,14 @@ public class Main {
 				if(Client.id == Integer.parseInt(ids[0])) {
 					String quorum_client_ids[] = ids[1].split(",");
 					for(String quorum_client_id: quorum_client_ids) {
-						InetSocketAddress addr = client_map.get(Integer.parseInt(quorum_client_id));
-						if(Client.quorum == null) {
-							Client.quorum = new HashMap<InetSocketAddress, SocketMap>();
-							Client.quorum.put(addr, null);
-						} else {
-							Client.quorum.put(addr, null);
+						if(Integer.parseInt(quorum_client_id) != Client.id) {
+							InetSocketAddress addr = client_map.get(Integer.parseInt(quorum_client_id));
+							if(Client.quorum == null) {
+								Client.quorum = new HashMap<InetSocketAddress, SocketMap>();
+								Client.quorum.put(addr, null);
+							} else {
+								Client.quorum.put(addr, null);
+							}
 						}
 					}
 				}
@@ -204,7 +206,6 @@ public class Main {
 			} else {
 				Client client = new Client();
 				client.execute(args[0]);
-				
 				ServerSocket clientServerSocket = new ServerSocket(Client.port);
 				while(true) {
 					try {

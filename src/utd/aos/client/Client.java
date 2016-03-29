@@ -148,7 +148,8 @@ public class Client implements Runnable{
 					socket.close();
 					break;
 			    } catch(ConnectException e) {
-			        System.out.println("Connect failed, waiting and trying again");
+			    	e.getMessage();
+			        System.out.println("Connect failed, waiting and trying again: "+ip.getHostName()+"->"+addr.getHostName());
 			        try {
 			            Thread.sleep(1000);
 			        }
