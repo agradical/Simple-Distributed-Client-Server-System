@@ -11,7 +11,6 @@ import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.HashMap;
@@ -30,15 +29,15 @@ import utd.aos.utils.Operations.OperationMethod;
 
 public class Client implements Runnable{
 	
-	private int id;
-	private Map<InetSocketAddress, SocketMap> quorum;
-	private Map<Integer, InetSocketAddress> otherClients;
-	private Map<String, Integer> hostIdMap;
+	public static int id;
+	public static Map<InetSocketAddress, SocketMap> quorum;
+	public static Map<Integer, InetSocketAddress> otherClients;
+	public static Map<String, Integer> hostIdMap;
 	
-	private SocketMap serverSocketMap;
+	public static SocketMap serverSocketMap;
 	
-	private InetAddress ip;
-	private Integer port;
+	public static InetAddress ip;
+	public static Integer port;
 	
 	public static Semaphore mutex = new Semaphore(1);	
 	public static Semaphore gotallReplies = new Semaphore(1);
@@ -60,6 +59,14 @@ public class Client implements Runnable{
 		AVAILABLE, BLOCKED 
 	}
 	
+	public Client() {
+		
+	}
+	
+	Socket socket;
+	public Client(Socket socket) {
+		this.socket = socket;
+	}
 	//MutexAlgorithm algo;
 	
 	//blocked: either me executing critical section or didn't get the release from last reply.
@@ -67,27 +74,14 @@ public class Client implements Runnable{
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
-		ServerSocket serverSocket = null;
-		try {
-			serverSocket = new ServerSocket(this.getPort());
-			while(true) {
-				//Accepting the client connection
-				Socket clientSocket = serverSocket.accept();
-				try {	
-					
-					talk(clientSocket);
-					
-				} catch (Exception e) {
-					e.printStackTrace();
-				}				
-				clientSocket.close();
-			}
-
-		} catch (IOException i) {
-			i.printStackTrace();
-		}
-		
+		try {	
+			talk(this.socket);
+			this.socket.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}				
 	}
+
 	
 	private void talk(Socket socket) throws IOException, InterruptedException {
 		InputStream in = socket.getInputStream();
@@ -297,10 +291,6 @@ public class Client implements Runnable{
 		return id;
 	}
 
-	public void setId(int id) {
-		this.id = id;
-	}
-	
 	public void addClientToQuorum(InetSocketAddress client, SocketMap socket) {
 		if(this.getQuorum() == null) {
 			Map<InetSocketAddress, SocketMap> quorum = new HashMap<InetSocketAddress, SocketMap>();
@@ -315,48 +305,28 @@ public class Client implements Runnable{
 		return serverSocketMap;
 	}
 
-	public void setServerSocketMap(SocketMap serverSocketMap) {
-		this.serverSocketMap = serverSocketMap;
-	}
-
 	public Map<InetSocketAddress, SocketMap> getQuorum() {
 		return quorum;
 	}
 
-	public void setQuorum(Map<InetSocketAddress, SocketMap> quorum) {
-		this.quorum = quorum;
-	}
 
 	public InetAddress getIp() {
 		return ip;
-	}
-
-	public void setIp(InetAddress ip) {
-		this.ip = ip;
 	}
 
 	public Integer getPort() {
 		return port;
 	}
 
-	public void setPort(Integer port) {
-		this.port = port;
-	}
 
 	public Map<Integer, InetSocketAddress> getOtherClients() {
 		return otherClients;
 	}
 
-	public void setOtherClients(Map<Integer, InetSocketAddress> otherClients) {
-		this.otherClients = otherClients;
-	}
 
 	public Map<String, Integer> getHostIdMap() {
 		return hostIdMap;
 	}
 
-	public void setHostIdMap(Map<String, Integer> hostIdMap) {
-		this.hostIdMap = hostIdMap;
-	}
 
 }

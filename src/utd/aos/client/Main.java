@@ -10,6 +10,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -61,7 +62,7 @@ public class Main {
 		}	
 		
 		//Client and Quorum Configuration
-		Client client = new Client();
+		//Client client = new Client();
 		String client_filename = "client_id.list";
 		File client_id_file = new File(client_filename);
 		
@@ -78,16 +79,16 @@ public class Main {
 				
 				InetSocketAddress client_addr = new InetSocketAddress(addr, port);
 				if(client_addr.getHostName().equals(InetAddress.getLocalHost().getHostName())) {
-					client.setId(id);
-					client.setIp(addr);
-					client.setPort(port);
+					Client.id = id;
+					Client.ip = addr;
+					Client.port = port;
 				}else {
 					client_map.put(id, client_addr);
 					hostIdMap.put(client_addr.getHostName(), id);
 				}
 			}
-			client.setOtherClients(client_map);
-			client.setHostIdMap(hostIdMap);
+			Client.otherClients = client_map;
+			Client.hostIdMap = hostIdMap;
 			c_br.close();
 			
 		} else {
@@ -98,35 +99,41 @@ public class Main {
 
 		String client_quorum_filename = "client_quorum.list";
 		File client_quorum_file = new File(client_quorum_filename);
+		
 		if(client_quorum_file.exists()) {
 			BufferedReader cq_br = new BufferedReader(new FileReader(client_quorum_file));
 			String _client_quorum = "";
 			while((_client_quorum = cq_br.readLine()) != null) {
 				String ids[] = _client_quorum.split(" ");
-				if(client.getId() == Integer.parseInt(ids[0])) {
+				if(Client.id == Integer.parseInt(ids[0])) {
 					String quorum_client_ids[] = ids[1].split(",");
 					for(String quorum_client_id: quorum_client_ids) {
 						InetSocketAddress addr = client_map.get(Integer.parseInt(quorum_client_id));
-						client.addClientToQuorum(addr, null);
+						if(Client.quorum == null) {
+							Client.quorum = new HashMap<InetSocketAddress, SocketMap>();
+							Client.quorum.put(addr, null);
+						} else {
+							Client.quorum.put(addr, null);
+						}
 					}
 				}
 			}
 			cq_br.close();
 		}
-		exec.submit(client);
 		
+			
 		try {
 
-			Socket socket = new Socket(server, server_port);
+			Socket socketToServer = new Socket(server, server_port);
 			
-			OutputStream out = socket.getOutputStream();
+			OutputStream out = socketToServer.getOutputStream();
 			ObjectOutputStream o_out = new ObjectOutputStream(out);
-			InputStream in = socket.getInputStream();
+			InputStream in = socketToServer.getInputStream();
 			ObjectInputStream o_in = new ObjectInputStream(in);		
 			
 			//Create client
-			SocketMap serverSocketMap = new SocketMap(socket, o_out, o_in);
-			client.setServerSocketMap(serverSocketMap);
+			SocketMap serverSocketMap = new SocketMap(socketToServer, o_out, o_in);
+			Client.serverSocketMap = serverSocketMap;
 			
 			//Default run
 			if (args.length == 0) {
@@ -188,16 +195,28 @@ public class Main {
 					if(arg.length > 2) {
 						operation.setArg(arg[2]);
 					}
-
+					Client client = new Client();
 					operation.setType(OperationType.PERFORM);				
 					Message m = client.request(operation);
 					System.out.println(m.getServerId()+" :: "+m.messsage);			
 				}
 				scan.close();
 			} else {
+				Client client = new Client();
 				client.execute(args[0]);
+				
+				ServerSocket clientServerSocket = new ServerSocket(Client.port);
+				while(true) {
+					try {
+						Socket socket = clientServerSocket.accept();
+						exec.submit(new Client(socket));
+					} catch(Exception e) {
+						break;
+					}
+				}
+				clientServerSocket.close();
 			}
-			socket.close();
+			socketToServer.close();
 
 		} catch (IOException e) {
 			e.printStackTrace();

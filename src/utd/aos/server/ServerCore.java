@@ -6,7 +6,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,11 +19,20 @@ import utd.aos.utils.Operations.OperationType;
 
 public class ServerCore implements Server {
 	
-	private Map<InetAddress, Integer> otherServers;
-	private InetAddress ip;
-	private Integer port;
+	public static Map<InetAddress, Integer> otherServers;
+	public static InetAddress ip;
+	public static Integer port;
 	
-	public String DATADIRECTORY = "data";
+	private Socket socket;
+	
+	public static String DATADIRECTORY = "data";
+	
+	public ServerCore() {
+		
+	}
+	public ServerCore(Socket socket) {
+		this.socket = socket;
+	}
 	
 	@Override
 	public Server getServer() {
@@ -32,43 +40,30 @@ public class ServerCore implements Server {
 	}
 	
 	@Override
-	public void setServer(InetAddress ip, Integer port) {
-		this.ip = ip;
-		this.port = port;
+	public void setServer(InetAddress addr, Integer port_num) {
+		ip = addr;
+		port = port_num;
 	}
 	
 	@Override
 	public void addServer(InetAddress server, Integer port) {
-		if (this.otherServers == null) {
-			this.otherServers = new HashMap<InetAddress, Integer>();
+		if (otherServers == null) {
+			otherServers = new HashMap<InetAddress, Integer>();
 		}
-		this.otherServers.put(server, port);
+		otherServers.put(server, port);
 	}
 
 
 	@Override
-	public void run() {
-		ServerSocket serverSocket = null;
+	public void run() {		
 		try {
-			serverSocket = new ServerSocket(this.getPort());
-			System.out.println("--Server started--");
-			while(true) {
-				//Accepting the client connection
-				Socket clientSocket = serverSocket.accept();
-				System.out.println("--Client connected--");
-				try {
-					execute(clientSocket);	
-				} catch (Exception e) {
-					e.printStackTrace();
-				}				
-				clientSocket.close();
-			}
-
-		} catch (IOException i) {
-			i.printStackTrace();
-		}
+			execute(socket);
+			socket.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}				
 	}
-	
+
 	@Override
 	public void execute(Socket clientSocket) throws IOException, ClassNotFoundException {
 		
@@ -265,24 +260,24 @@ public class ServerCore implements Server {
 		return ip;
 	}
 
-	public void setIp(InetAddress ip) {
-		this.ip = ip;
+	public void setIp(InetAddress addr) {
+		ip = addr;
 	}
 
 	public int getPort() {
 		return port;
 	}
 
-	public void setPort(int port) {
-		this.port = port;
+	public void setPort(int port_num) {
+		port = port_num;
 	}
 
 	public String getDATADIRECTORY() {
-		return this.DATADIRECTORY;
+		return DATADIRECTORY;
 	}
 
 	public void setDATADIRECTORY(String dATADIRECTORY) {
-		this.DATADIRECTORY = dATADIRECTORY;
+		DATADIRECTORY = dATADIRECTORY;
 	}
 
 

@@ -7,7 +7,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -40,17 +43,21 @@ public class Main {
 			}
 			br.close();
 			
-			Server myServer = new ServerCore();
+			//Server myServer = new ServerCore();
 			InetSocketAddress myinet = null;
 			
 			//Comparing the Hostname with localhost name
 			//Add the other server information.
 			for(InetSocketAddress addr: server_ips) {
 				if(addr.getHostName().equals(InetAddress.getLocalHost().getHostName())) {
-					myServer.setServer(addr.getAddress(), addr.getPort());
+					ServerCore.ip = addr.getAddress();
+					ServerCore.port = addr.getPort();
 					myinet = addr;
 				} else {
-					myServer.addServer(addr.getAddress(), addr.getPort());
+					if(ServerCore.otherServers == null) {
+						ServerCore.otherServers = new HashMap<InetAddress, Integer>();
+					}
+					ServerCore.otherServers.put(addr.getAddress(), addr.getPort());
 				}
 			}
 			
@@ -64,8 +71,8 @@ public class Main {
 				String inet[] = data_conf.split(" ");				
 				InetAddress addr = InetAddress.getByName(inet[0]);
 				String data_directory = inet[1];
-				if(myServer.getIp().equals(addr)) {
-					myServer.setDATADIRECTORY(data_directory);
+				if(ServerCore.ip.equals(addr)) {
+					ServerCore.DATADIRECTORY = data_directory;
 				}
 			}
 			conf_br.close();
@@ -74,8 +81,17 @@ public class Main {
 				System.out.println("This is not listed server");
 				return;
 			}
-
-			exec.submit(myServer);	
+			
+			ServerSocket serverSocket = new ServerSocket(ServerCore.port);
+			while(true) {
+				try {
+				Socket socket = serverSocket.accept();
+				exec.submit(new ServerCore(socket));
+				} catch(Exception e) {
+					break;
+				}
+			}
+			serverSocket.close();
 			
 		} catch(FileNotFoundException f) {
 			System.out.print(f.getMessage());
