@@ -129,11 +129,13 @@ public class Operations implements Serializable{
 					file_r.seek(seek);
 					byte[] ip_bytes = this.getArg().getBytes();
 					int nextWriteLocation = seek+this.getArg().length();
-					
+
 					file_r.write(ip_bytes);
 					file_r.close();
 					
 					resource.setWriteOffset(nextWriteLocation);
+					System.out.println("--write offst func: "+resource.getWriteOffset());
+
 					m.setStatusCode(200);
 					m.setMesssage("A string is written in "+resource.getFilename());
 				} catch (FileNotFoundException e) {

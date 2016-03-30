@@ -136,6 +136,8 @@ public class ServerCore implements Server {
 						resource.setFilename(inputResource.getFilename());
 						resource.setSeek(inputResource.getSeek());
 						resource.setWriteOffset(inputResource.getWriteOffset());
+						System.out.println("--write offst main: "+resource.getWriteOffset());
+
 						resource.setFileContent(inputResource.getFileContent());
 					}
 					
