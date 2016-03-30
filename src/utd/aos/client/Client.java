@@ -26,6 +26,7 @@ import utd.aos.utils.Operations;
 import utd.aos.utils.Resource;
 import utd.aos.utils.SocketMap;
 import utd.aos.utils.Operations.OperationMethod;
+import utd.aos.utils.Operations.OperationType;
 
 public class Client implements Runnable{
 	
@@ -85,6 +86,7 @@ public class Client implements Runnable{
 
 				Operations operation = new Operations();
 				operation.setOperation(OperationMethod.WRITE);
+				operation.setType(OperationType.PERFORM);
 				operation.setArg(id+" : "+count+" : "+InetAddress.getLocalHost().getHostName()+"\n");
 
 				if(state.equals(State.BLOCKED)) {
