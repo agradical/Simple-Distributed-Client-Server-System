@@ -139,6 +139,7 @@ public class ServerCore implements Server {
 						resource.setFileContent(inputResource.getFileContent());
 					}
 					
+					operation.setInputResource(resource);
 					perform_message = operation.perform(this.getDATADIRECTORY(), resource);			
 					
 					if (perform_message.getStatusCode() == 200) {
