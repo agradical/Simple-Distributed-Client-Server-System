@@ -159,11 +159,11 @@ public class Client implements Runnable{
 						}
 					}
 				}
-				
 				if(message.getType().equals(MessageType.REPLY) 
 						&& pendingRepliesToReceive.get(message.getId())) {
+					System.out.println("--got reply from "+socketHostname+"--");
 					pendingRepliesToReceive.remove(message.getId());
-					if(pendingRepliesToReceive.size()==0) {
+					if(pendingRepliesToReceive.size() == 0) {
 						gotallReplies.release();
 						System.out.println("--releasing allreply mutex--");
 					}
