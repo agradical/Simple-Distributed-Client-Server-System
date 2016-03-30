@@ -46,11 +46,10 @@ public class ClientListener extends Client {
 					gotallReleases.acquire();
 					state = State.BLOCKED;
 					System.out.println("--got request message from "+socketHostname+"--");
+					pendingReleasesToReceive.put(message.getId(), true);
 					return_message.setId(id);
 					return_message.setType(MessageType.REPLY);
-					pendingReleasesToReceive.put(message.getId(), true);
 					System.out.println("---waiting for release message from id "+ message.getId()+"--");
-
 					System.out.println("--REPLY--");
 
 					o_out.writeObject(return_message);
