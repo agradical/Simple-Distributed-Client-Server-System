@@ -181,7 +181,7 @@ public class Client implements Runnable{
 			while(true) {
 			    try {	    	
 					Socket socket = new Socket(addr.getHostName(), addr.getPort());
-					if(quorum.get(addr.getHostName()) != null) {
+					if(quorum.containsKey(addr.getHostName())) {
 						InputStream in = socket.getInputStream();
 						OutputStream out = socket.getOutputStream();
 
