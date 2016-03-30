@@ -140,6 +140,7 @@ public class Client implements Runnable{
 				//if message is a request message send a reply and mark as blocked 
 				//until get the release from the corresponding process
 				if(message.getType().equals(MessageType.REQUEST)) {
+					gotallReleases.acquire();
 					System.out.println("--got request message from "+socketHostname+"--");
 					return_message.setType(MessageType.REPLY);
 					pendingReleasesToReceive.put(id, true);
@@ -154,6 +155,7 @@ public class Client implements Runnable{
 					if(pendingReleasesToReceive.get(message.getId())) {
 						pendingReleasesToReceive.remove(message.getId());
 						if(pendingReleasesToReceive.size() == 0) {
+							gotallReleases.release();
 							state = State.AVAILABLE;
 						}
 					}
