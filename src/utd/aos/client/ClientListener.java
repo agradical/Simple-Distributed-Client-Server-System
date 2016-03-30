@@ -49,12 +49,15 @@ public class ClientListener extends Client {
 					return_message.setId(id);
 					return_message.setType(MessageType.REPLY);
 					pendingReleasesToReceive.put(message.getId(), true);
+					System.out.println("---waiting for release message from id "+ message.getId()+"--");
+
 					System.out.println("--REPLY--");
 
 					o_out.writeObject(return_message);
 				}
 				
 				if(message.getType().equals(MessageType.RELEASE)) {
+					System.out.println("---release message from id "+ message.getId()+" received--");
 					if(pendingReleasesToReceive.get(message.getId())) {
 						pendingReleasesToReceive.remove(message.getId());
 						if(pendingReleasesToReceive.size() == 0) {
