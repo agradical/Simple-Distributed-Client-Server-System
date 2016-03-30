@@ -111,6 +111,7 @@ public class Client implements Runnable{
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+			count++;
 		}
 		shutdown();			
 	}
