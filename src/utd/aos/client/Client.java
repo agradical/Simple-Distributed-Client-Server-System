@@ -87,6 +87,7 @@ public class Client implements Runnable{
 				Operations operation = new Operations();
 				operation.setOperation(OperationMethod.WRITE);
 				operation.setType(OperationType.PERFORM);
+				operation.setInputResource(resource);
 				operation.setArg(id+" : "+count+" : "+InetAddress.getLocalHost().getHostName()+"\n");
 
 				if(state.equals(State.BLOCKED)) {
