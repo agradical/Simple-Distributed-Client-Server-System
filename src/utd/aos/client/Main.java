@@ -205,12 +205,12 @@ public class Main {
 				scan.close();
 			} else {
 				Client client = new Client();
-				client.execute(args[0]);
+				exec.submit(client);
 				ServerSocket clientServerSocket = new ServerSocket(Client.port);
 				while(true) {
 					try {
 						Socket socket = clientServerSocket.accept();
-						exec.submit(new Client(socket));
+						exec.submit(new ClientListener(socket));
 					} catch(Exception e) {
 						break;
 					}

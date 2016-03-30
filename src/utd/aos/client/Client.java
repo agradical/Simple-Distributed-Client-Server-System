@@ -62,11 +62,7 @@ public class Client implements Runnable{
 	public Client() {
 		
 	}
-	
-	Socket socket;
-	public Client(Socket socket) {
-		this.socket = socket;
-	}
+
 	//MutexAlgorithm algo;
 	
 	//blocked: either me executing critical section or didn't get the release from last reply.
@@ -74,16 +70,46 @@ public class Client implements Runnable{
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
-		try {	
-			talk(this.socket);
-			this.socket.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}				
+		init();
+		int count = 1;
+		while(count <= 40) {
+			Random rand = new Random();
+			Integer delay = rand.nextInt(40);
+			delay += 10;
+
+			try {
+				Thread.sleep(delay);
+
+				Resource resource = new Resource();
+				resource.setFilename("test");
+
+				Operations operation = new Operations();
+				operation.setOperation(OperationMethod.WRITE);
+				operation.setArg(id+" : "+count+" : "+InetAddress.getLocalHost().getHostName()+"\n");
+
+				if(state.equals(State.BLOCKED)) {
+					gotallReleases.acquire();
+					gotallReleases.release();
+				}
+				state = State.BLOCKED;
+				mutex.acquire();
+				if(getMutex()) {
+					gotallReplies.acquire();
+					request(operation);
+					gotallReplies.release();
+				}
+				state = State.AVAILABLE;
+				sendRelease();
+				mutex.release();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		shutdown();			
 	}
 
 	
-	private void talk(Socket socket) throws IOException, InterruptedException {
+	protected void talk(Socket socket) throws IOException, InterruptedException {
 		InputStream in = socket.getInputStream();
 		OutputStream out = socket.getOutputStream();
 		
@@ -148,7 +174,7 @@ public class Client implements Runnable{
 					socket.close();
 					break;
 			    } catch(ConnectException e) {
-			    	e.getMessage();
+			    	e.printStackTrace();
 			        System.out.println("Connect failed, waiting and trying again: "+ip.getHostName()+"->"+addr.getHostName());
 			        try {
 			            Thread.sleep(1000);
@@ -194,41 +220,6 @@ public class Client implements Runnable{
 	
 	public void shutdown() {
 		
-	}
-	
-	public void execute(String filename) throws Exception {
-		init();
-		int count = 1;
-		while(count <= 40) {
-			Random rand = new Random();
-			Integer delay = rand.nextInt(40);
-			delay += 10;
-
-			Thread.sleep(delay);
-			
-			Resource resource = new Resource();
-			resource.setFilename(filename);
-			
-			Operations operation = new Operations();
-			operation.setOperation(OperationMethod.WRITE);
-			operation.setArg(id+" : "+count+" : "+InetAddress.getLocalHost().getHostName()+"\n");
-		
-			if(state.equals(State.BLOCKED)) {
-				gotallReleases.acquire();
-				gotallReleases.release();
-			}
-			state = State.BLOCKED;
-			mutex.acquire();
-			if(getMutex()) {
-				gotallReplies.acquire();
-				request(operation);
-				gotallReplies.release();
-			}
-			state = State.AVAILABLE;
-			sendRelease();
-			mutex.release();
-		}
-		shutdown();
 	}
 	
 	public boolean getMutex() throws InterruptedException, IOException {
