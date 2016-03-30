@@ -19,7 +19,8 @@ public class ClientServer extends Client {
 
 			MutexMessage message = (MutexMessage)o_in.readObject();
 			if(message.getType().equals(MessageType.REPLY) 
-					&& pendingRepliesToReceive.get(message.getId())) {
+					&& pendingRepliesToReceive.get(
+							message.getId())) {
 				System.out.println("--got reply from "+socketmap.getAddr().getHostName()+"--");
 				pendingRepliesToReceive.remove(message.getId());
 				if(pendingRepliesToReceive.size() == 0) {
