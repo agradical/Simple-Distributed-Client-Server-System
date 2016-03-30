@@ -163,11 +163,13 @@ public class Client implements Runnable{
 		for(Map.Entry<String, SocketMap> entry: quorum.entrySet()) {
 			SocketMap quorum_client = entry.getValue();
 			String hostname = quorum_client.getAddr().getHostName();
+			Integer client_id = hostIdMap.get(hostname);
 			
 			System.out.println("--sending request message to "+hostname+"--");
 			
 			MutexMessage message = new MutexMessage(id, MessageType.REQUEST);
 			quorum_client.getO_out().writeObject(message);
+			pendingRepliesToReceive.put(client_id, true);
 			
 			ClientServer clientServer = new ClientServer(quorum_client);
 			Thread t = new Thread(clientServer);
