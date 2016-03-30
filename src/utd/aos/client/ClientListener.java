@@ -43,7 +43,14 @@ public class ClientListener extends Client {
 				MutexMessage return_message = message;
 				
 				if(message.getType().equals(MessageType.REQUEST)) {
-					gotallReleases.acquire();
+					if(pendingRepliesToReceive.containsKey(message.getId())) {
+						if(id < message.getId()) {
+							gotallReleases.acquire();
+						}
+					} else {
+						gotallReleases.acquire();
+					}
+					
 					state = State.BLOCKED;
 					System.out.println("--got request message from "+socketHostname+"--");
 					int client_id = message.getId();
