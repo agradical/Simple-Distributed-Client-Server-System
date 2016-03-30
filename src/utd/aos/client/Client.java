@@ -109,13 +109,15 @@ public class Client implements Runnable{
 	}
 
 	
-	protected void talk(Socket socket) throws IOException, InterruptedException {
-		InputStream in = socket.getInputStream();
-		OutputStream out = socket.getOutputStream();
+	protected void listen(Socket socket) throws IOException, InterruptedException {
+		String socketHostname = socket.getInetAddress().getHostName();
+		Integer socketClientId = hostIdMap.get(socketHostname);
+		InetSocketAddress addr = otherClients.get(socketClientId);
 		
-		ObjectInputStream o_in = new ObjectInputStream(in);
-		ObjectOutputStream o_out = new ObjectOutputStream(out);
-		
+		SocketMap socketMap = quorum.get(addr);
+		ObjectInputStream o_in = socketMap.getO_in();
+		ObjectOutputStream o_out = socketMap.getO_out();
+	
 		while(!socket.isClosed()) {
 
 			Object object = null;
@@ -281,16 +283,6 @@ public class Client implements Runnable{
 
 	public int getId() {
 		return id;
-	}
-
-	public void addClientToQuorum(InetSocketAddress client, SocketMap socket) {
-		if(this.getQuorum() == null) {
-			Map<InetSocketAddress, SocketMap> quorum = new HashMap<InetSocketAddress, SocketMap>();
-			quorum.put(client, socket);
-		} else {
-			Map<InetSocketAddress, SocketMap> quorum = this.getQuorum();
-			quorum.put(client, socket);
-		}
 	}
 
 	public SocketMap getServerSocketMap() {

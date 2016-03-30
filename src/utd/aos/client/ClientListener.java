@@ -12,7 +12,7 @@ public class ClientListener extends Client {
 	@Override
 	public void run() {
 		try {	
-			super.talk(this.socket);
+			super.listen(this.socket);
 			this.socket.close();
 		} catch (Exception e) {
 			e.printStackTrace();
