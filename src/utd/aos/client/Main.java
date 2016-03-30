@@ -110,11 +110,12 @@ public class Main {
 					for(String quorum_client_id: quorum_client_ids) {
 						if(Integer.parseInt(quorum_client_id) != Client.id) {
 							InetSocketAddress addr = client_map.get(Integer.parseInt(quorum_client_id));
+							SocketMap socketmap = new SocketMap(addr);
 							if(Client.quorum == null) {
-								Client.quorum = new HashMap<InetSocketAddress, SocketMap>();
-								Client.quorum.put(addr, null);
+								Client.quorum = new HashMap<String, SocketMap>();
+								Client.quorum.put(addr.getHostName(), socketmap);
 							} else {
-								Client.quorum.put(addr, null);
+								Client.quorum.put(addr.getHostName(), socketmap);
 							}
 						}
 					}

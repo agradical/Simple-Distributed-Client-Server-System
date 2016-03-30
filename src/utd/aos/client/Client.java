@@ -30,7 +30,7 @@ import utd.aos.utils.Operations.OperationMethod;
 public class Client implements Runnable{
 	
 	public static int id;
-	public static Map<InetSocketAddress, SocketMap> quorum;
+	public static Map<String, SocketMap> quorum;
 	public static Map<Integer, InetSocketAddress> otherClients;
 	public static Map<String, Integer> hostIdMap;
 	
@@ -174,6 +174,7 @@ public class Client implements Runnable{
 			    try {	    	
 					Socket socket = new Socket(addr.getHostName(), addr.getPort());
 					socket.close();
+					System.out.println("Connect success: "+ip.getHostName()+"->"+addr.getHostName());
 					break;
 			    } catch(ConnectException e) {
 			    	e.printStackTrace();
@@ -194,8 +195,9 @@ public class Client implements Runnable{
 			}
 		}
 		
-		for(Map.Entry<InetSocketAddress, SocketMap> entry: quorum.entrySet()) {
-			InetSocketAddress addr = entry.getKey();
+		for(Map.Entry<String, SocketMap> entry: quorum.entrySet()) {
+			
+			InetSocketAddress addr = entry.getValue().getAddr();
 
 			try {	    	
 				Socket socket = new Socket(addr.getHostName(), addr.getPort());
@@ -226,9 +228,9 @@ public class Client implements Runnable{
 	
 	public boolean getMutex() throws InterruptedException, IOException {
 		gotallReplies.acquire();
-		for(Map.Entry<InetSocketAddress, SocketMap> entry: quorum.entrySet()) {
+		for(Map.Entry<String, SocketMap> entry: quorum.entrySet()) {
 			SocketMap quorum_client = entry.getValue();
-			String hostname = entry.getKey().getHostName();
+			String hostname = quorum_client.getAddr().getHostName();
 			Integer client_id = hostIdMap.get(hostname);
 			MutexMessage message = new MutexMessage(id, MessageType.REQUEST);
 			quorum_client.getO_out().writeObject(message);
@@ -238,7 +240,7 @@ public class Client implements Runnable{
 	}
 	
 	public void sendRelease() throws IOException {
-		for(Map.Entry<InetSocketAddress, SocketMap> entry: quorum.entrySet()) {
+		for(Map.Entry<String, SocketMap> entry: quorum.entrySet()) {
 			SocketMap quorum_client = entry.getValue();
 			MutexMessage message = new MutexMessage(id, MessageType.RELEASE);
 			quorum_client.getO_out().writeObject(message);
@@ -289,7 +291,7 @@ public class Client implements Runnable{
 		return serverSocketMap;
 	}
 
-	public Map<InetSocketAddress, SocketMap> getQuorum() {
+	public Map<String, SocketMap> getQuorum() {
 		return quorum;
 	}
 
