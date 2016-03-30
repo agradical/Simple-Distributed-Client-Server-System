@@ -167,11 +167,12 @@ public class Client implements Runnable{
 			System.out.println("--sending request message to "+hostname+"--");
 			
 			MutexMessage message = new MutexMessage(id, MessageType.REQUEST);
-
+			quorum_client.getO_out().writeObject(message);
+			
 			ClientServer clientServer = new ClientServer(quorum_client);
 			Thread t = new Thread(clientServer);
 			t.start();
-			quorum_client.getO_out().writeObject(message);
+			
 
 		}
 		gotallReplies.acquire();
