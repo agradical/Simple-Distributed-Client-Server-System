@@ -93,12 +93,16 @@ public class Client implements Runnable{
 				}
 				state = State.BLOCKED;
 				mutex.acquire();
+				System.out.println("--got mutex semaphore--");
 				if(getMutex()) {
+					System.out.println("--acquired mutex--");
 					gotallReplies.acquire();
 					request(operation);
 					gotallReplies.release();
 				}
 				state = State.AVAILABLE;
+				System.out.println("--done with CS--");
+
 				sendRelease();
 				mutex.release();
 			} catch (Exception e) {
@@ -136,9 +140,12 @@ public class Client implements Runnable{
 				//if message is a request message send a reply and mark as blocked 
 				//until get the release from the corresponding process
 				if(message.getType().equals(MessageType.REQUEST)) {
+					System.out.println("--got request message from "+socketHostname+"--");
 					return_message.setType(MessageType.REPLY);
 					pendingReleasesToReceive.put(id, true);
 					state = State.BLOCKED;
+					System.out.println("--REPLY--");
+
 					o_out.writeObject(return_message);
 				}
 			} else if (state.equals(State.BLOCKED)) {
@@ -156,6 +163,7 @@ public class Client implements Runnable{
 						&& pendingRepliesToReceive.get(message.getId())) {
 					pendingRepliesToReceive.remove(message.getId());
 					if(pendingRepliesToReceive.size()==0) {
+						System.out.println("--releasing allreply mutex--");
 						gotallReplies.release();
 					}
 				}
@@ -173,7 +181,19 @@ public class Client implements Runnable{
 			while(true) {
 			    try {	    	
 					Socket socket = new Socket(addr.getHostName(), addr.getPort());
-					socket.close();
+					if(quorum.get(addr.getHostName()) != null) {
+						InputStream in = socket.getInputStream();
+						OutputStream out = socket.getOutputStream();
+
+						ObjectInputStream o_in = new ObjectInputStream(in);
+						ObjectOutputStream o_out = new ObjectOutputStream(out);
+						System.out.println("--Saving streams--");
+
+						quorum.put(addr.getHostName(), (new SocketMap(socket, o_out, o_in)));
+						break;
+					} else {
+						socket.close();
+					}
 					System.out.println("Connect success: "+ip.getHostName()+"->"+addr.getHostName());
 					break;
 			    } catch(ConnectException e) {
@@ -194,32 +214,7 @@ public class Client implements Runnable{
 				} 
 			}
 		}
-		
-		for(Map.Entry<String, SocketMap> entry: quorum.entrySet()) {
-			
-			InetSocketAddress addr = entry.getValue().getAddr();
 
-			try {	    	
-				Socket socket = new Socket(addr.getHostName(), addr.getPort());
-
-				InputStream in = socket.getInputStream();
-				OutputStream out = socket.getOutputStream();
-
-				ObjectInputStream o_in = new ObjectInputStream(in);
-				ObjectOutputStream o_out = new ObjectOutputStream(out);
-
-				entry.setValue(new SocketMap(socket, o_out, o_in));
-				break;
-
-			} catch (UnknownHostException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} 
-
-		}
 	}
 	
 	public void shutdown() {
@@ -227,6 +222,7 @@ public class Client implements Runnable{
 	}
 	
 	public boolean getMutex() throws InterruptedException, IOException {
+		System.out.println("--trying to acquire mutex--");
 		gotallReplies.acquire();
 		for(Map.Entry<String, SocketMap> entry: quorum.entrySet()) {
 			SocketMap quorum_client = entry.getValue();
@@ -240,6 +236,7 @@ public class Client implements Runnable{
 	}
 	
 	public void sendRelease() throws IOException {
+		System.out.println("--semd release to all--");
 		for(Map.Entry<String, SocketMap> entry: quorum.entrySet()) {
 			SocketMap quorum_client = entry.getValue();
 			MutexMessage message = new MutexMessage(id, MessageType.RELEASE);
@@ -249,6 +246,8 @@ public class Client implements Runnable{
 	
 	public Message request(Operations operation) throws IOException, ClassNotFoundException {	
 		//creating the request
+		System.out.println("--sending request--");
+
 		if(operation.getOperation().equals(OperationMethod.CREATE)) {
 			Resource resource = operation.getInputResource();
 			File file = new File(resource.getFilename());
