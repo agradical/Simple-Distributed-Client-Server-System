@@ -143,8 +143,9 @@ public class Client implements Runnable{
 					state = State.BLOCKED;
 					gotallReleases.acquire();
 					System.out.println("--got request message from "+socketHostname+"--");
+					return_message.setId(id);
 					return_message.setType(MessageType.REPLY);
-					pendingReleasesToReceive.put(id, true);
+					pendingReleasesToReceive.put(message.getId(), true);
 					System.out.println("--REPLY--");
 
 					o_out.writeObject(return_message);
@@ -232,6 +233,7 @@ public class Client implements Runnable{
 			SocketMap quorum_client = entry.getValue();
 			String hostname = quorum_client.getAddr().getHostName();
 			Integer client_id = hostIdMap.get(hostname);
+			System.out.println("--sending request message to "+hostname+"--");
 			MutexMessage message = new MutexMessage(id, MessageType.REQUEST);
 			quorum_client.getO_out().writeObject(message);
 			pendingRepliesToReceive.put(client_id, true);
@@ -240,7 +242,7 @@ public class Client implements Runnable{
 	}
 	
 	public void sendRelease() throws IOException {
-		System.out.println("--semd release to all--");
+		System.out.println("--semd release to acquired mall--");
 		for(Map.Entry<String, SocketMap> entry: quorum.entrySet()) {
 			SocketMap quorum_client = entry.getValue();
 			MutexMessage message = new MutexMessage(id, MessageType.RELEASE);
