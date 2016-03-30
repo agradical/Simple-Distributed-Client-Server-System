@@ -186,7 +186,8 @@ public class Client implements Runnable{
 						ObjectInputStream o_in = new ObjectInputStream(in);
 						ObjectOutputStream o_out = new ObjectOutputStream(out);
 						System.out.println("--Saving streams--");
-
+						MutexMessage testmessage = new MutexMessage();
+						o_out.writeObject(testmessage);
 						quorum.put(addr.getHostName(), (new SocketMap(socket, o_out, o_in)));
 						break;
 					} else {

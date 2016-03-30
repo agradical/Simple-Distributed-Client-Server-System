@@ -10,7 +10,7 @@ public class MutexMessage implements Serializable {
 	private int id;
 	private MessageType type;
 	public enum MessageType {
-		REQUEST, REPLY, RELEASE, FAILED, ENQUIRE, YIELD, GRANT
+		TEST, REQUEST, REPLY, RELEASE, FAILED, ENQUIRE, YIELD, GRANT
 	}
 	
 	public MutexMessage() {
