@@ -112,68 +112,6 @@ public class Client implements Runnable{
 	}
 
 	
-	protected void listen(Socket socket) throws IOException, InterruptedException {
-		String socketHostname = socket.getInetAddress().getHostName();
-		
-		InputStream in = socket.getInputStream();
-		OutputStream out = socket.getOutputStream();
-
-		ObjectOutputStream o_out = new ObjectOutputStream(out);
-		ObjectInputStream o_in = new ObjectInputStream(in);
-	
-		while(!socket.isClosed()) {
-
-			Object object = null;
-			try {
-				object = o_in.readObject();
-			} catch (Exception e) {
-				//Closing connection with other servers in case of termination from client
-				System.out.println("--Closing connection--");
-				
-			}
-			
-			MutexMessage message = null;
-			message = (MutexMessage)object;
-			MutexMessage return_message = message;
-			if(state.equals(State.AVAILABLE)) {
-				//if message is a request message send a reply and mark as blocked 
-				//until get the release from the corresponding process
-				if(message.getType().equals(MessageType.REQUEST)) {
-					gotallReleases.acquire();
-					state = State.BLOCKED;
-					System.out.println("--got request message from "+socketHostname+"--");
-					return_message.setId(id);
-					return_message.setType(MessageType.REPLY);
-					pendingReleasesToReceive.put(message.getId(), true);
-					System.out.println("--REPLY--");
-
-					o_out.writeObject(return_message);
-				}
-			} else if (state.equals(State.BLOCKED)) {
-				if(message.getType().equals(MessageType.RELEASE)) {
-					if(pendingReleasesToReceive.get(message.getId())) {
-						pendingReleasesToReceive.remove(message.getId());
-						if(pendingReleasesToReceive.size() == 0) {
-							gotallReleases.release();
-							state = State.AVAILABLE;
-						}
-					}
-				}
-				if(message.getType().equals(MessageType.REPLY) 
-						&& pendingRepliesToReceive.get(message.getId())) {
-					System.out.println("--got reply from "+socketHostname+"--");
-					pendingRepliesToReceive.remove(message.getId());
-					if(pendingRepliesToReceive.size() == 0) {
-						gotallReplies.release();
-						System.out.println("--releasing allreply mutex--");
-					}
-				}
-			}	
-			
-		}
-		
-	}
-	
 	public void init() {
 		
 		//Check for all clients to be started
@@ -194,13 +132,10 @@ public class Client implements Runnable{
 						o_out.writeObject(testmessage);
 						quorum.put(addr.getHostName(), (new SocketMap(socket, o_out, o_in, addr)));
 						break;
-					} else {
-						//socket.close();
 					}
 					System.out.println("Connect success: "+ip.getHostName()+"->"+addr.getHostName());
 					break;
 			    } catch(ConnectException e) {
-			    	//e.printStackTrace();
 			        System.out.println("Connect failed, waiting and trying again: "+ip.getHostName()+"->"+addr.getHostName());
 			        try {
 			            Thread.sleep(1000);
@@ -209,10 +144,8 @@ public class Client implements Runnable{
 			            ie.printStackTrace();
 			        }
 			    } catch (UnknownHostException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} 
 			}
@@ -230,12 +163,18 @@ public class Client implements Runnable{
 		for(Map.Entry<String, SocketMap> entry: quorum.entrySet()) {
 			SocketMap quorum_client = entry.getValue();
 			String hostname = quorum_client.getAddr().getHostName();
-			Integer client_id = hostIdMap.get(hostname);
+			
 			System.out.println("--sending request message to "+hostname+"--");
+			
 			MutexMessage message = new MutexMessage(id, MessageType.REQUEST);
 			quorum_client.getO_out().writeObject(message);
-			pendingRepliesToReceive.put(client_id, true);
+
+			ClientServer clientServer = new ClientServer(quorum_client.getSocket());
+			Thread t = new Thread(clientServer);
+			t.start();
 		}
+		gotallReplies.acquire();
+		gotallReplies.release();
 		return true;
 	}
 	
