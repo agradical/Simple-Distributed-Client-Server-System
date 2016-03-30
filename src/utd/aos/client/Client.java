@@ -140,11 +140,11 @@ public class Client implements Runnable{
 				//if message is a request message send a reply and mark as blocked 
 				//until get the release from the corresponding process
 				if(message.getType().equals(MessageType.REQUEST)) {
+					state = State.BLOCKED;
 					gotallReleases.acquire();
 					System.out.println("--got request message from "+socketHostname+"--");
 					return_message.setType(MessageType.REPLY);
 					pendingReleasesToReceive.put(id, true);
-					state = State.BLOCKED;
 					System.out.println("--REPLY--");
 
 					o_out.writeObject(return_message);
