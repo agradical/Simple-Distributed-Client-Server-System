@@ -115,10 +115,8 @@ public class Client implements Runnable{
 	
 	protected void listen(Socket socket) throws IOException, InterruptedException {
 		String socketHostname = socket.getInetAddress().getHostName();
-		Integer socketClientId = hostIdMap.get(socketHostname);
-		InetSocketAddress addr = otherClients.get(socketClientId);
 		
-		SocketMap socketMap = quorum.get(addr);
+		SocketMap socketMap = quorum.get(socketHostname);
 		ObjectInputStream o_in = socketMap.getO_in();
 		ObjectOutputStream o_out = socketMap.getO_out();
 	
