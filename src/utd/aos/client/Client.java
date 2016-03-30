@@ -116,9 +116,11 @@ public class Client implements Runnable{
 	protected void listen(Socket socket) throws IOException, InterruptedException {
 		String socketHostname = socket.getInetAddress().getHostName();
 		
-		SocketMap socketMap = quorum.get(socketHostname);
-		ObjectInputStream o_in = socketMap.getO_in();
-		ObjectOutputStream o_out = socketMap.getO_out();
+		InputStream in = socket.getInputStream();
+		OutputStream out = socket.getOutputStream();
+
+		ObjectOutputStream o_out = new ObjectOutputStream(out);
+		ObjectInputStream o_in = new ObjectInputStream(in);
 	
 		while(!socket.isClosed()) {
 
@@ -192,7 +194,7 @@ public class Client implements Runnable{
 						quorum.put(addr.getHostName(), (new SocketMap(socket, o_out, o_in)));
 						break;
 					} else {
-						socket.close();
+						//socket.close();
 					}
 					System.out.println("Connect success: "+ip.getHostName()+"->"+addr.getHostName());
 					break;
