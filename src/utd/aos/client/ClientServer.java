@@ -1,30 +1,26 @@
 package utd.aos.client;
 
-import java.io.InputStream;
 import java.io.ObjectInputStream;
-
-import java.net.Socket;
-
 import utd.aos.utils.MutexMessage;
 import utd.aos.utils.MutexMessage.MessageType;
+import utd.aos.utils.SocketMap;
 
 public class ClientServer extends Client {
 	
-	Socket socket;
-	public ClientServer(Socket socket) {
-		this.socket = socket;
+	SocketMap socketmap;
+	public ClientServer(SocketMap socketmap) {
+		this.socketmap = socketmap;
 	}
 	
 	@Override
 	public void run() {
 		try {
-			InputStream in = socket.getInputStream();
-			ObjectInputStream o_in =  new ObjectInputStream(in);
+			ObjectInputStream o_in = socketmap.getO_in();
 
 			MutexMessage message = (MutexMessage)o_in.readObject();
 			if(message.getType().equals(MessageType.REPLY) 
 					&& pendingRepliesToReceive.get(message.getId())) {
-				System.out.println("--got reply from "+socket.getInetAddress().getHostName()+"--");
+				System.out.println("--got reply from "+socketmap.getAddr().getHostName()+"--");
 				pendingRepliesToReceive.remove(message.getId());
 				if(pendingRepliesToReceive.size() == 0) {
 					gotallReplies.release();

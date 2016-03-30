@@ -169,7 +169,7 @@ public class Client implements Runnable{
 			MutexMessage message = new MutexMessage(id, MessageType.REQUEST);
 			quorum_client.getO_out().writeObject(message);
 
-			ClientServer clientServer = new ClientServer(quorum_client.getSocket());
+			ClientServer clientServer = new ClientServer(quorum_client);
 			Thread t = new Thread(clientServer);
 			t.start();
 		}
