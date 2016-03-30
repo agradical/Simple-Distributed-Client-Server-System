@@ -191,7 +191,7 @@ public class Client implements Runnable{
 						MutexMessage testmessage = new MutexMessage();
 						testmessage.setType(MessageType.TEST);
 						o_out.writeObject(testmessage);
-						quorum.put(addr.getHostName(), (new SocketMap(socket, o_out, o_in)));
+						quorum.put(addr.getHostName(), (new SocketMap(socket, o_out, o_in, addr)));
 						break;
 					} else {
 						//socket.close();
@@ -199,7 +199,7 @@ public class Client implements Runnable{
 					System.out.println("Connect success: "+ip.getHostName()+"->"+addr.getHostName());
 					break;
 			    } catch(ConnectException e) {
-			    	e.printStackTrace();
+			    	//e.printStackTrace();
 			        System.out.println("Connect failed, waiting and trying again: "+ip.getHostName()+"->"+addr.getHostName());
 			        try {
 			            Thread.sleep(1000);
