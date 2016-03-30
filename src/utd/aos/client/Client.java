@@ -92,7 +92,7 @@ public class Client implements Runnable{
 					gotallReleases.release();
 				}
 				state = State.BLOCKED;
-				mutex.acquire();
+				gotallReleases.acquire();
 				System.out.println("--got mutex semaphore--");
 				if(getMutex()) {
 					System.out.println("--acquired mutex--");
@@ -102,9 +102,8 @@ public class Client implements Runnable{
 				}
 				state = State.AVAILABLE;
 				System.out.println("--done with CS--");
-
 				sendRelease();
-				mutex.release();
+				gotallReleases.release();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -140,8 +139,8 @@ public class Client implements Runnable{
 				//if message is a request message send a reply and mark as blocked 
 				//until get the release from the corresponding process
 				if(message.getType().equals(MessageType.REQUEST)) {
-					state = State.BLOCKED;
 					gotallReleases.acquire();
+					state = State.BLOCKED;
 					System.out.println("--got request message from "+socketHostname+"--");
 					return_message.setId(id);
 					return_message.setType(MessageType.REPLY);
@@ -151,7 +150,6 @@ public class Client implements Runnable{
 					o_out.writeObject(return_message);
 				}
 			} else if (state.equals(State.BLOCKED)) {
-								
 				if(message.getType().equals(MessageType.RELEASE)) {
 					if(pendingReleasesToReceive.get(message.getId())) {
 						pendingReleasesToReceive.remove(message.getId());
@@ -166,8 +164,8 @@ public class Client implements Runnable{
 						&& pendingRepliesToReceive.get(message.getId())) {
 					pendingRepliesToReceive.remove(message.getId());
 					if(pendingRepliesToReceive.size()==0) {
-						System.out.println("--releasing allreply mutex--");
 						gotallReplies.release();
+						System.out.println("--releasing allreply mutex--");
 					}
 				}
 			}	
