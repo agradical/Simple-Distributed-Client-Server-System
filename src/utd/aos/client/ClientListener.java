@@ -41,32 +41,29 @@ public class ClientListener extends Client {
 				MutexMessage message = null;
 				message = (MutexMessage)object;
 				MutexMessage return_message = message;
-				if(state.equals(State.AVAILABLE)) {
-					//if message is a request message send a reply and mark as blocked 
-					//until get the release from the corresponding process
-					if(message.getType().equals(MessageType.REQUEST)) {
-						gotallReleases.acquire();
-						state = State.BLOCKED;
-						System.out.println("--got request message from "+socketHostname+"--");
-						return_message.setId(id);
-						return_message.setType(MessageType.REPLY);
-						pendingReleasesToReceive.put(message.getId(), true);
-						System.out.println("--REPLY--");
+				
+				if(message.getType().equals(MessageType.REQUEST)) {
+					gotallReleases.acquire();
+					state = State.BLOCKED;
+					System.out.println("--got request message from "+socketHostname+"--");
+					return_message.setId(id);
+					return_message.setType(MessageType.REPLY);
+					pendingReleasesToReceive.put(message.getId(), true);
+					System.out.println("--REPLY--");
 
-						o_out.writeObject(return_message);
-					}
-				} else if (state.equals(State.BLOCKED)) {
-					if(message.getType().equals(MessageType.RELEASE)) {
-						if(pendingReleasesToReceive.get(message.getId())) {
-							pendingReleasesToReceive.remove(message.getId());
-							if(pendingReleasesToReceive.size() == 0) {
-								gotallReleases.release();
-								state = State.AVAILABLE;
-							}
+					o_out.writeObject(return_message);
+				}
+				
+				if(message.getType().equals(MessageType.RELEASE)) {
+					if(pendingReleasesToReceive.get(message.getId())) {
+						pendingReleasesToReceive.remove(message.getId());
+						if(pendingReleasesToReceive.size() == 0) {
+							gotallReleases.release();
+							state = State.AVAILABLE;
 						}
 					}
-				}	
-				
+				}
+
 			}
 			this.socket.close();
 		} catch (Exception e) {
