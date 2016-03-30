@@ -22,7 +22,8 @@ public class ServerCore implements Server {
 	public static Map<InetAddress, Integer> otherServers;
 	public static InetAddress ip;
 	public static Integer port;
-	
+	public static Map<String, Resource> activeResourceMap = new HashMap<String, Resource>();
+
 	private Socket socket;
 	
 	public static String DATADIRECTORY = "data";
@@ -68,7 +69,6 @@ public class ServerCore implements Server {
 	public void execute(Socket clientSocket) throws IOException, ClassNotFoundException {
 		
 		Map<InetAddress, SocketMap> sockets = new HashMap<InetAddress, SocketMap>();
-		Map<String, Resource> activeResourceMap = new HashMap<String, Resource>();
 		
 		InputStream in = clientSocket.getInputStream();
 		OutputStream out = clientSocket.getOutputStream();
