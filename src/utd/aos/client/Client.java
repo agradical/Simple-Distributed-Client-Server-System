@@ -46,14 +46,11 @@ public class Client implements Runnable{
 
 	public static Map<Integer, Boolean> pendingReleasesToReceive = new HashMap<Integer, Boolean>();
 	public static Map<Integer, Boolean> pendingRepliesToReceive = new HashMap<Integer, Boolean>();
-	public static Map<Integer, Boolean> pendingRequestTo = new HashMap<Integer, Boolean>();
+	public static Map<Integer, Boolean> pendingIncomingRequests = new HashMap<Integer, Boolean>();
 	
-	public static Integer repliedTo;
-	public static Integer sentFailedMessageTo;
-	public static Integer sentEnquireMessageTo;
-	public static Integer sentYieldMessageTo;
-	public static Integer sentGrantMessageTo;
-
+	public static Map<Integer, Boolean> gotFailedMessageFrom = new HashMap<Integer, Boolean>();
+	public static Map<Integer, Boolean> sentYieldMessageTo = new HashMap<Integer, Boolean>();
+	
 	public static boolean requesting;
 	
 	public State state = State.AVAILABLE;
