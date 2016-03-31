@@ -173,7 +173,7 @@ public class Client implements Runnable{
 			quorum_client.getO_out().writeObject(message);
 			pendingRepliesToReceive.put(client_id, true);
 			
-			ClientServer clientServer = new ClientServer(quorum_client);
+			ClientsServerThreadListener clientServer = new ClientsServerThreadListener(quorum_client);
 			Thread t = new Thread(clientServer);
 			t.start();
 			
