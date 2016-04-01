@@ -99,7 +99,7 @@ public class ClientsClientThreadListener extends Client {
 
 							InetSocketAddress addr = otherClients.get(pendingReleaseToReceive);
 							String client_hostname = addr.getHostName();
-							SocketMap client_socket_map = quorum.get(client_hostname);
+							SocketMap client_socket_map = allClientsSockets.get(client_hostname);
 
 							client_socket_map.getO_out().writeObject(return_message);
 						}

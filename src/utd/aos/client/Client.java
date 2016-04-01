@@ -128,15 +128,15 @@ public class Client implements Runnable{
 					MutexMessage testmessage = new MutexMessage();
 					testmessage.setType(MessageType.TEST);
 					o_out.writeObject(testmessage);
-					System.out.println("--checkpoint0--");
+					//System.out.println("--checkpoint0--");
 					SocketMap socketmap = new SocketMap(socket, o_out, o_in, addr);
 					
 					if(quorum.containsKey(addr.getHostName())) {
 
 						quorum.put(addr.getHostName(), socketmap);
-						System.out.println("--checkpoint1--");
+						//System.out.println("--checkpoint1--");
 					}
-					System.out.println("--checkpoint2--");
+					//System.out.println("--checkpoint2--");
 					if(allClientsSockets == null) {
 						allClientsSockets = new HashMap<String, SocketMap>();
 						allClientsSockets.put(addr.getHostName(), socketmap);
@@ -215,7 +215,7 @@ public class Client implements Runnable{
 	
 	public void sendRelease() throws IOException {
 		System.out.println("--send release to all--");
-		for(Map.Entry<String, SocketMap> entry: quorum.entrySet()) {
+		for(Map.Entry<String, SocketMap> entry: allClientsSockets.entrySet()) {
 			SocketMap quorum_client = entry.getValue();
 			MutexMessage message = new MutexMessage(id, MessageType.RELEASE);
 			quorum_client.getO_out().writeObject(message);
