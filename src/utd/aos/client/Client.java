@@ -122,20 +122,31 @@ public class Client implements Runnable{
 
 					ObjectInputStream o_in = new ObjectInputStream(in);
 					ObjectOutputStream o_out = new ObjectOutputStream(out);
+					
 					System.out.println("--Saving streams--");
+					
 					MutexMessage testmessage = new MutexMessage();
 					testmessage.setType(MessageType.TEST);
 					o_out.writeObject(testmessage);
+					System.out.println("--checkpoint0--");
 					SocketMap socketmap = new SocketMap(socket, o_out, o_in, addr);
+					
 					if(quorum.containsKey(addr.getHostName())) {
 
 						quorum.put(addr.getHostName(), socketmap);
-						
+						System.out.println("--checkpoint1--");
 					}
-					allClientsSockets.put(addr.getHostName(), socketmap);
-
+					System.out.println("--checkpoint2--");
+					if(allClientsSockets == null) {
+						allClientsSockets = new HashMap<String, SocketMap>();
+						allClientsSockets.put(addr.getHostName(), socketmap);
+					} else {
+						allClientsSockets.put(addr.getHostName(), socketmap);
+					}
 					System.out.println("Connect success: "+ip.getHostName()+"->"+addr.getHostName());
+
 					break;
+			    
 			    } catch(ConnectException e) {
 			    	System.out.println("Connect failed, waiting and trying again: "+ip.getHostName()+"->"+addr.getHostName());
 			        try {
