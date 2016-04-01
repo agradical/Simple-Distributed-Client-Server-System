@@ -61,6 +61,7 @@ public class ClientsClientThreadListener extends Client {
 					}
 					
 					gotallReplies.acquire();
+					gotallReplies.release();
 					
 					if(pendingReleaseToReceive == 0 && pendingRepliesToReceive.size() == 0) {
 						
