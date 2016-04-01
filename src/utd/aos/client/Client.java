@@ -126,14 +126,15 @@ public class Client implements Runnable{
 			    	MutexMessage testmessage = new MutexMessage();
 			    	testmessage.setType(MessageType.TEST);
 			    	o_out.writeObject(testmessage);
+			    	SocketMap socketmap = new SocketMap(socket, o_out, o_in, addr);
 			    	if(quorum.containsKey(addr.getHostName())) {
-			    		quorum.put(addr.getHostName(), (new SocketMap(socket, o_out, o_in, addr)));
+			    		quorum.put(addr.getHostName(), socketmap);
 			    	}
 			    	
-			    	allClientsSockets.put(addr.getHostName(), (new SocketMap(socket, o_out, o_in, addr)));
-			    	
-					System.out.println("Connect success: "+ip.getHostName()+"->"+addr.getHostName());
-					break;
+			    	allClientsSockets.put(addr.getHostName(), socketmap);
+
+			    	System.out.println("Connect success: "+ip.getHostName()+"->"+addr.getHostName());
+			    	break;
 			    } catch(ConnectException e) {
 			        System.out.println("Connect failed, waiting and trying again: "+ip.getHostName()+"->"+addr.getHostName());
 			        try {
@@ -202,7 +203,7 @@ public class Client implements Runnable{
 	
 	public void sendRelease() throws IOException {
 		System.out.println("--send release to all--");
-		for(Map.Entry<String, SocketMap> entry: allClientsSockets.entrySet()) {
+		for(Map.Entry<String, SocketMap> entry: quorum.entrySet()) {
 			SocketMap quorum_client = entry.getValue();
 			MutexMessage message = new MutexMessage(id, MessageType.RELEASE);
 			quorum_client.getO_out().writeObject(message);
