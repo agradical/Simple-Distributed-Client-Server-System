@@ -37,7 +37,6 @@ public class ClientsClientThreadListener extends Client {
 				} catch (Exception e) {
 					//Closing connection with other servers in case of termination from client
 					System.out.println("--Closing connection--");
-					
 				}
 				
 				MutexMessage message = null;

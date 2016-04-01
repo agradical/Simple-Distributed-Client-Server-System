@@ -160,6 +160,7 @@ public class Client implements Runnable{
 		gotFailedMessageFrom = new HashMap<Integer, Boolean>();
 		sentYieldMessageTo = new HashMap<Integer, Boolean>();
 		
+		fifo = new PriorityQueue<Integer>();
 	}
 	
 	public boolean getMutex() throws InterruptedException, IOException {
