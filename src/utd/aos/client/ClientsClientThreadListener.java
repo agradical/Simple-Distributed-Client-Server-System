@@ -59,7 +59,7 @@ public class ClientsClientThreadListener extends Client {
 						gotReplyofEnquire.acquire();
 					}
 
-					if(pendingRepliesToReceive.size() == 0 && pendingReleaseToReceive != 0) {
+					if(pendingRepliesToReceive.size() == 0 && pendingReleaseToReceive == 0) {
 						
 						gotallReleases.acquire();
 						
@@ -77,7 +77,7 @@ public class ClientsClientThreadListener extends Client {
 					} else {
 						//lower id = high priority
 
-						if(pendingReleaseToReceive < client_id) {
+						if(pendingReleaseToReceive != 0 && pendingReleaseToReceive < client_id) {
 
 							return_message.setId(id);
 							return_message.setType(MessageType.FAILED);
