@@ -115,31 +115,24 @@ public class Client implements Runnable{
 		for(Map.Entry<Integer, InetSocketAddress> entry: otherClients.entrySet()) {
 			InetSocketAddress addr = entry.getValue();
 			while(true) {
-			    try {
-			    	if(entry.getKey() != id) {
-			    		Socket socket = new Socket(addr.getHostName(), addr.getPort());
-			    		InputStream in = socket.getInputStream();
-			    		OutputStream out = socket.getOutputStream();
+			    try {	    	
+					Socket socket = new Socket(addr.getHostName(), addr.getPort());
+					if(quorum.containsKey(addr.getHostName())) {
+						InputStream in = socket.getInputStream();
+						OutputStream out = socket.getOutputStream();
 
-			    		ObjectInputStream o_in = new ObjectInputStream(in);
-			    		ObjectOutputStream o_out = new ObjectOutputStream(out);
-			    		System.out.println("--Saving streams--");
-			    		MutexMessage testmessage = new MutexMessage();
-			    		testmessage.setType(MessageType.TEST);
-			    		System.out.println("--sending test message--");
-			    		o_out.writeObject(testmessage);
-			    		
-			    		SocketMap socketmap = new SocketMap(socket, o_out, o_in, addr);
-			    		
-			    		if(quorum.containsKey(addr.getHostName())) {
-			    			quorum.put(addr.getHostName(), socketmap);
-			    		}
-			    		System.out.println("--updating quorum and client--");
-			    		allClientsSockets.put(addr.getHostName(), socketmap);
-
-			    		System.out.println("Connect success: "+ip.getHostName()+"->"+addr.getHostName());
-				    	break;
-			    	}
+						ObjectInputStream o_in = new ObjectInputStream(in);
+						ObjectOutputStream o_out = new ObjectOutputStream(out);
+						System.out.println("--Saving streams--");
+						MutexMessage testmessage = new MutexMessage();
+						testmessage.setType(MessageType.TEST);
+						o_out.writeObject(testmessage);
+						SocketMap socketmap = new SocketMap(socket, o_out, o_in, addr);
+						quorum.put(addr.getHostName(), socketmap);
+						break;
+					}
+					System.out.println("Connect success: "+ip.getHostName()+"->"+addr.getHostName());
+					break;
 			    } catch(ConnectException e) {
 			        System.out.println("Connect failed, waiting and trying again: "+ip.getHostName()+"->"+addr.getHostName());
 			        try {
