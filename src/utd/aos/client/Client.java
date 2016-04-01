@@ -33,6 +33,7 @@ public class Client implements Runnable{
 	
 	public static int id;
 	public static Map<String, SocketMap> quorum;
+	public static Map<String, SocketMap> allClientsSockets;
 	public static Map<Integer, InetSocketAddress> otherClients;
 	public static Map<String, Integer> hostIdMap;
 	
@@ -115,20 +116,22 @@ public class Client implements Runnable{
 			InetSocketAddress addr = entry.getValue();
 			while(true) {
 			    try {	    	
-					Socket socket = new Socket(addr.getHostName(), addr.getPort());
-					if(quorum.containsKey(addr.getHostName())) {
-						InputStream in = socket.getInputStream();
-						OutputStream out = socket.getOutputStream();
+			    	Socket socket = new Socket(addr.getHostName(), addr.getPort());
+			    	InputStream in = socket.getInputStream();
+			    	OutputStream out = socket.getOutputStream();
 
-						ObjectInputStream o_in = new ObjectInputStream(in);
-						ObjectOutputStream o_out = new ObjectOutputStream(out);
-						System.out.println("--Saving streams--");
-						MutexMessage testmessage = new MutexMessage();
-						testmessage.setType(MessageType.TEST);
-						o_out.writeObject(testmessage);
-						quorum.put(addr.getHostName(), (new SocketMap(socket, o_out, o_in, addr)));
-						break;
-					}
+			    	ObjectInputStream o_in = new ObjectInputStream(in);
+			    	ObjectOutputStream o_out = new ObjectOutputStream(out);
+			    	System.out.println("--Saving streams--");
+			    	MutexMessage testmessage = new MutexMessage();
+			    	testmessage.setType(MessageType.TEST);
+			    	o_out.writeObject(testmessage);
+			    	if(quorum.containsKey(addr.getHostName())) {
+			    		quorum.put(addr.getHostName(), (new SocketMap(socket, o_out, o_in, addr)));
+			    	}
+			    	
+			    	allClientsSockets.put(addr.getHostName(), (new SocketMap(socket, o_out, o_in, addr)));
+			    	
 					System.out.println("Connect success: "+ip.getHostName()+"->"+addr.getHostName());
 					break;
 			    } catch(ConnectException e) {
@@ -199,7 +202,7 @@ public class Client implements Runnable{
 	
 	public void sendRelease() throws IOException {
 		System.out.println("--send release to all--");
-		for(Map.Entry<String, SocketMap> entry: quorum.entrySet()) {
+		for(Map.Entry<String, SocketMap> entry: allClientsSockets.entrySet()) {
 			SocketMap quorum_client = entry.getValue();
 			MutexMessage message = new MutexMessage(id, MessageType.RELEASE);
 			quorum_client.getO_out().writeObject(message);

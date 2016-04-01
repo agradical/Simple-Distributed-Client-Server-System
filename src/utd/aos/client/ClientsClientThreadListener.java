@@ -115,7 +115,7 @@ public class ClientsClientThreadListener extends Client {
 				if(message.getType().equals(MessageType.RELEASE)) {
 					System.out.println("---release message from id "+ message.getId()+" received--");
 					if(pendingReleaseToReceive == client_id) {
-						
+
 						pendingReleaseToReceive = 0;
 						gotallReleases.release();
 					
@@ -144,7 +144,7 @@ public class ClientsClientThreadListener extends Client {
 											
 						InetSocketAddress addr = otherClients.get(client_id);
 						String client_hostname = addr.getHostName();
-						SocketMap client_socket_map = quorum.get(client_hostname);
+						SocketMap client_socket_map = allClientsSockets.get(client_hostname);
 						
 						System.out.println("--YIELD SENT to "+client_hostname+"--");
 
@@ -164,7 +164,7 @@ public class ClientsClientThreadListener extends Client {
 					Integer client_granted = fifo.remove();
 					InetSocketAddress addr = otherClients.get(client_granted);
 					String client_hostname = addr.getHostName();
-					SocketMap client_socket_map = quorum.get(client_hostname);
+					SocketMap client_socket_map = allClientsSockets.get(client_hostname);
 							
 					return_message.setId(id);
 					return_message.setType(MessageType.REPLY);
