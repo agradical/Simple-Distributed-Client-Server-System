@@ -54,14 +54,11 @@ public class ClientsClientThreadListener extends Client {
 					} else {
 						gotallReleases.acquire();
 					}*/
-
 					
 					if(pendingReplyofEnquire != 0) {
 						gotReplyofEnquire.acquire();
+						gotReplyofEnquire.release();
 					}
-					
-					gotallReplies.acquire();
-					gotallReplies.release();
 					
 					if(pendingReleaseToReceive == 0 && pendingRepliesToReceive.size() == 0) {
 						
@@ -105,9 +102,18 @@ public class ClientsClientThreadListener extends Client {
 						}
 
 					} else if (pendingReleaseToReceive == 0 && pendingRepliesToReceive.size() != 0) {
-						//Shouldn't happen
-						System.out.print("----SHOULD NOT BE HERE----");
-						throw new Exception("---DOOMED---");
+						
+						gotallReleases.acquire();
+						pendingReleaseToReceive = client_id;
+
+						return_message.setId(id);
+						return_message.setType(MessageType.REPLY);
+
+						System.out.println("--got concurrent request message from "+socketHostname+"--");
+						System.out.println("--REPLY to "+socketHostname+"--");
+						System.out.println("--waiting for release message from id "+ client_id+"--");
+
+						o_out.writeObject(return_message);
 					}
 					
 				}
@@ -125,6 +131,11 @@ public class ClientsClientThreadListener extends Client {
 				if(message.getType().equals(MessageType.ENQUIRE)) {
 					//sends grant or reply to top request in the queue
 					//TODO
+					
+					if(pendingReplyofEnquire != 0) {
+						gotReplyofEnquire.acquire();
+						gotReplyofEnquire.release();
+					}
 					
 					if(gotFailedMessageFrom != null && gotFailedMessageFrom.size() != 0) {
 						
@@ -149,8 +160,7 @@ public class ClientsClientThreadListener extends Client {
 						System.out.println("--YIELD SENT to "+client_hostname+"--");
 
 						client_socket_map.getO_out().writeObject(return_message);
-					}
-					
+					} 
 				}
 				
 				if(message.getType().equals(MessageType.YIELD)) {

@@ -25,6 +25,7 @@ public class ClientsServerThreadListener extends Client {
 				gotReplyofEnquire.release();
 			}
 			
+			
 			if(message.getType().equals(MessageType.REPLY) && pendingRepliesToReceive.containsKey(client_id)) {
 				
 				System.out.println("--got reply from "+socketmap.getAddr().getHostName()+"--");
@@ -41,6 +42,7 @@ public class ClientsServerThreadListener extends Client {
 					System.out.println("--releasing allreply mutex--");
 				}
 			}
+			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

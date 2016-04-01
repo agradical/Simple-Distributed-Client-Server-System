@@ -79,7 +79,9 @@ public class Client implements Runnable{
 			Random rand = new Random();
 			Integer delay = rand.nextInt(40);
 			delay += 10;
-
+			
+			reset();
+			
 			try {
 				Thread.sleep(delay);
 
@@ -169,6 +171,7 @@ public class Client implements Runnable{
 		
 	}
 	public void reset() {
+		
 		pendingReleaseToReceive = 0;
 		pendingReplyofEnquire = 0;
 		
@@ -186,8 +189,6 @@ public class Client implements Runnable{
 		
 		System.out.println("--got release semaphore--");
 		gotallReplies.acquire();
-		
-		reset();
 		
 		System.out.println("--got reply semaphore--");
 
