@@ -6,7 +6,6 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.Map;
 
 import utd.aos.utils.MutexMessage;
 import utd.aos.utils.MutexMessage.MessageType;
@@ -44,6 +43,8 @@ public class ClientsClientThreadListener extends Client {
 				MutexMessage message = null;
 				message = (MutexMessage)object;
 				MutexMessage return_message = new MutexMessage();
+				int client_id = message.getId();
+
 				
 				if(message.getType().equals(MessageType.REQUEST)) {
 					/*
@@ -54,87 +55,124 @@ public class ClientsClientThreadListener extends Client {
 					} else {
 						gotallReleases.acquire();
 					}*/
-					
-					if(pendingRepliesToReceive.size() == 0) {
+				
+					if(pendingReplyofEnquire != 0) {
+						gotReplyofEnquire.acquire();
+					}
+
+					if(pendingRepliesToReceive.size() == 0 && pendingReleaseToReceive != 0) {
 						
-						state = State.BLOCKED;
-						System.out.println("--got request message from "+socketHostname+"--");
-						int client_id = message.getId();
-						pendingReleasesToReceive.put(client_id, true);
+						gotallReleases.acquire();
+						
+						pendingReleaseToReceive = client_id;
+
 						return_message.setId(id);
 						return_message.setType(MessageType.REPLY);
-						System.out.println("--REPLY--");
+
+						System.out.println("--got request message from "+socketHostname+"--");
+						System.out.println("--REPLY to "+socketHostname+"--");
 						System.out.println("---waiting for release message from id "+ client_id+"--");
+
 						o_out.writeObject(return_message);
-						
+					
 					} else {
 						//lower id = high priority
-						for(Map.Entry<String, SocketMap> entry : quorum.entrySet()) {
-							int _id = hostIdMap.get(entry.getKey());
-							if( _id < message.getId()) {
-								if(pendingReleasesToReceive.containsKey(_id)) {
-									return_message.setId(id);
-									return_message.setType(MessageType.FAILED);
-									System.out.println("--FAILED SENT to "+socketHostname+"--");
-									o_out.writeObject(return_message);
-								} else {
-									return_message.setId(id);
-									return_message.setType(MessageType.ENQUIRE);
-									System.out.println("--ENQUIRE SENT to "+socketHostname+"--");
-									InetSocketAddress addr = otherClients.get(_id);
-									String client_hostname = addr.getHostName();
-									SocketMap client_socket_map = quorum.get(client_hostname);
 
-									client_socket_map.getO_out().writeObject(return_message);
-								}
-							}
+						if(pendingReleaseToReceive < client_id) {
+
+							return_message.setId(id);
+							return_message.setType(MessageType.FAILED);
+
+							System.out.println("--FAILED SENT to "+socketHostname+"--");
+							o_out.writeObject(return_message);
+
 						}
+						else {
+							
+							gotReplyofEnquire.acquire();
+							pendingReplyofEnquire = pendingReleaseToReceive;
+							
+							return_message.setId(id);
+							return_message.setType(MessageType.ENQUIRE);
+							
+							System.out.println("--ENQUIRE SENT to "+socketHostname+"--");
+
+							InetSocketAddress addr = otherClients.get(pendingReleaseToReceive);
+							String client_hostname = addr.getHostName();
+							SocketMap client_socket_map = quorum.get(client_hostname);
+
+							client_socket_map.getO_out().writeObject(return_message);
+						}
+
 					}
 					
 				}
 				
 				if(message.getType().equals(MessageType.RELEASE)) {
 					System.out.println("---release message from id "+ message.getId()+" received--");
-					if(pendingReleasesToReceive.get(message.getId())) {
-						pendingReleasesToReceive.remove(message.getId());
-						if(pendingReleasesToReceive.size() == 0) {
-							gotallReleases.release();
-							state = State.AVAILABLE;
-						}
+					if(pendingReleaseToReceive == client_id) {
+						
+						pendingReleaseToReceive = 0;
+						gotallReleases.release();
+					
 					}
 				}
 				
 				if(message.getType().equals(MessageType.ENQUIRE)) {
 					//sends grant or reply to top request in the queue
 					//TODO
+					
 					if(gotFailedMessageFrom != null && gotFailedMessageFrom.size() != 0) {
+						
 						return_message.setId(id);
 						return_message.setType(MessageType.YIELD);
+						
+						sentYieldMessageTo.put(client_id, true);
+						
 						System.out.println("--YIELD SENT to "+socketHostname+"--");
+						
 						o_out.writeObject(return_message);
+					
 					} else if (sentYieldMessageTo != null && sentYieldMessageTo.size() != 0) {
+												
 						return_message.setId(id);
 						return_message.setType(MessageType.YIELD);
-						sentYieldMessageTo.put(message.getId(), true);
-						InetSocketAddress addr = otherClients.get(message.getId());
+											
+						InetSocketAddress addr = otherClients.get(client_id);
 						String client_hostname = addr.getHostName();
 						SocketMap client_socket_map = quorum.get(client_hostname);
+						
 						System.out.println("--YIELD SENT to "+client_hostname+"--");
 
 						client_socket_map.getO_out().writeObject(return_message);
 					}
+					
 				}
 				
 				if(message.getType().equals(MessageType.YIELD)) {
 					//sends grant or reply to top request in the queue
 					//TODO send to top request
+					gotReplyofEnquire.release();
+					pendingReplyofEnquire = 0;
+					
+					fifo.add(client_id);
+					
+					Integer client_granted = fifo.remove();
+					InetSocketAddress addr = otherClients.get(client_granted);
+					String client_hostname = addr.getHostName();
+					SocketMap client_socket_map = quorum.get(client_hostname);
+							
 					return_message.setId(id);
 					return_message.setType(MessageType.REPLY);
+					
 					System.out.println("--GRANT SENT to "+socketHostname+"--");
-					o_out.writeObject(return_message);
+					
+					client_socket_map.getO_out().writeObject(return_message);
 				}
 			}
+			
 			this.socket.close();
+		
 		} catch (Exception e) {
 			e.printStackTrace();
 		}	

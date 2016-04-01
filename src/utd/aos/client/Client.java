@@ -16,6 +16,7 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.concurrent.Semaphore;
 
@@ -41,17 +42,19 @@ public class Client implements Runnable{
 	public static Integer port;
 	
 	public static Semaphore mutex = new Semaphore(1);	
+	
 	public static Semaphore gotallReplies = new Semaphore(1);
 	public static Semaphore gotallReleases = new Semaphore(1);
-
-	public static Map<Integer, Boolean> pendingReleasesToReceive = new HashMap<Integer, Boolean>();
-	public static Map<Integer, Boolean> pendingRepliesToReceive = new HashMap<Integer, Boolean>();
-	public static Map<Integer, Boolean> pendingIncomingRequests = new HashMap<Integer, Boolean>();
+	public static Semaphore gotReplyofEnquire = new Semaphore(1);
 	
+	public static int pendingReleaseToReceive;
+	public static int pendingReplyofEnquire;
+	
+	public static Map<Integer, Boolean> pendingRepliesToReceive = new HashMap<Integer, Boolean>();
 	public static Map<Integer, Boolean> gotFailedMessageFrom = new HashMap<Integer, Boolean>();
 	public static Map<Integer, Boolean> sentYieldMessageTo = new HashMap<Integer, Boolean>();
 	
-	public static boolean requesting;
+	public static PriorityQueue<Integer> fifo = new PriorityQueue<Integer>();
 	
 	public State state = State.AVAILABLE;
 	public enum State {
@@ -88,23 +91,14 @@ public class Client implements Runnable{
 				operation.setInputResource(resource);
 				operation.setArg(id+" : "+count+" : "+InetAddress.getLocalHost().getHostName()+"\n");
 
-				if(state.equals(State.BLOCKED)) {
-					gotallReleases.acquire();
-					gotallReleases.release();
-				}
-				state = State.BLOCKED;
-				gotallReleases.acquire();
-				System.out.println("--got mutex semaphore--");
+				
 				if(getMutex()) {
-					System.out.println("--acquired mutex--");
-					gotallReplies.acquire();
+					System.out.println("--starting CS--");
 					request(operation);
-					gotallReplies.release();
+					System.out.println("--done with CS--");
+
 				}
-				state = State.AVAILABLE;
-				System.out.println("--done with CS--");
 				sendRelease();
-				gotallReleases.release();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -158,34 +152,52 @@ public class Client implements Runnable{
 	public void shutdown() {
 		
 	}
+	public void reset() {
+		pendingReleaseToReceive = 0;
+		pendingReplyofEnquire = 0;
+		
+		pendingRepliesToReceive = new HashMap<Integer, Boolean>();
+		gotFailedMessageFrom = new HashMap<Integer, Boolean>();
+		sentYieldMessageTo = new HashMap<Integer, Boolean>();
+		
+	}
 	
 	public boolean getMutex() throws InterruptedException, IOException {
+		
 		System.out.println("--trying to acquire mutex--");
+		gotallReleases.acquire();
+		
+		System.out.println("--got release semaphore--");
 		gotallReplies.acquire();
+		
+		reset();
+		
+		System.out.println("--got reply semaphore--");
+
 		for(Map.Entry<String, SocketMap> entry: quorum.entrySet()) {
 			SocketMap quorum_client = entry.getValue();
 			String hostname = quorum_client.getAddr().getHostName();
 			Integer client_id = hostIdMap.get(hostname);
+			MutexMessage message = new MutexMessage(id, MessageType.REQUEST);
 			
 			System.out.println("--sending request message to "+hostname+"--");
 			
-			MutexMessage message = new MutexMessage(id, MessageType.REQUEST);
 			quorum_client.getO_out().writeObject(message);
 			pendingRepliesToReceive.put(client_id, true);
 			
 			ClientsServerThreadListener clientServer = new ClientsServerThreadListener(quorum_client);
 			Thread t = new Thread(clientServer);
 			t.start();
-			
-
 		}
 		gotallReplies.acquire();
 		gotallReplies.release();
+		gotallReleases.release();
+
 		return true;
 	}
 	
 	public void sendRelease() throws IOException {
-		System.out.println("--semd release to acquired mall--");
+		System.out.println("--send release to all--");
 		for(Map.Entry<String, SocketMap> entry: quorum.entrySet()) {
 			SocketMap quorum_client = entry.getValue();
 			MutexMessage message = new MutexMessage(id, MessageType.RELEASE);
@@ -195,7 +207,7 @@ public class Client implements Runnable{
 	
 	public Message request(Operations operation) throws IOException, ClassNotFoundException {	
 		//creating the request
-		System.out.println("--sending request--");
+		System.out.println("--sending request to server--");
 
 		if(operation.getOperation().equals(OperationMethod.CREATE)) {
 			Resource resource = operation.getInputResource();

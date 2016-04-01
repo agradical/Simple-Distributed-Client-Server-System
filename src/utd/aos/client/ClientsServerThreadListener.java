@@ -16,20 +16,27 @@ public class ClientsServerThreadListener extends Client {
 	public void run() {
 		try {
 			ObjectInputStream o_in = socketmap.getO_in();
-
 			MutexMessage message = (MutexMessage)o_in.readObject();
+			int client_id = message.getId();
+
 			if(message.getType().equals(MessageType.FAILED)) {
-				gotFailedMessageFrom.put(message.getId(), true);
+				gotFailedMessageFrom.put(client_id, true);
+				pendingReplyofEnquire = 0;
+				gotReplyofEnquire.release();
 			}
 			
-			if(message.getType().equals(MessageType.REPLY) 
-					&& pendingRepliesToReceive.containsKey(message.getId())) {
+			if(message.getType().equals(MessageType.REPLY) && pendingRepliesToReceive.containsKey(client_id)) {
+				
 				System.out.println("--got reply from "+socketmap.getAddr().getHostName()+"--");
-				pendingRepliesToReceive.remove(message.getId());
-				if(sentYieldMessageTo.containsKey(message.getId())) {
-					sentYieldMessageTo.remove(message.getId());
+				
+				pendingRepliesToReceive.remove(client_id);
+				
+				if(sentYieldMessageTo.containsKey(client_id)) {
+					sentYieldMessageTo.remove(client_id);
 				}
+				
 				if(pendingRepliesToReceive.size() == 0) {
+					
 					gotallReplies.release();
 					System.out.println("--releasing allreply mutex--");
 				}
