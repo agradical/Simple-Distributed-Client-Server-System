@@ -54,15 +54,20 @@ public class ClientsClientThreadListener extends Client {
 					} else {
 						gotallReleases.acquire();
 					}*/
-				
+
+
+					if(pendingReleaseToReceive != 0) {
+						gotallReleases.acquire();
+						gotallReleases.release();
+					}
+					
 					if(pendingReplyofEnquire != 0) {
 						gotReplyofEnquire.acquire();
 					}
 
 					if(pendingRepliesToReceive.size() == 0 && pendingReleaseToReceive == 0) {
-						
+
 						gotallReleases.acquire();
-						
 						pendingReleaseToReceive = client_id;
 
 						return_message.setId(id);
@@ -85,8 +90,7 @@ public class ClientsClientThreadListener extends Client {
 							System.out.println("--FAILED SENT to "+socketHostname+"--");
 							o_out.writeObject(return_message);
 
-						}
-						else {
+						} else {
 							
 							gotReplyofEnquire.acquire();
 							pendingReplyofEnquire = pendingReleaseToReceive;
