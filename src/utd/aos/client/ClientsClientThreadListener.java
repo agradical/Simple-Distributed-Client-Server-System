@@ -55,18 +55,15 @@ public class ClientsClientThreadListener extends Client {
 						gotallReleases.acquire();
 					}*/
 
-
-					if(pendingReleaseToReceive != 0) {
-						gotallReleases.acquire();
-						gotallReleases.release();
-					}
 					
 					if(pendingReplyofEnquire != 0) {
 						gotReplyofEnquire.acquire();
 					}
-
-					if(pendingRepliesToReceive.size() == 0 && pendingReleaseToReceive == 0) {
-
+					
+					gotallReplies.acquire();
+					
+					if(pendingReleaseToReceive == 0 && pendingRepliesToReceive.size() == 0) {
+						
 						gotallReleases.acquire();
 						pendingReleaseToReceive = client_id;
 
@@ -78,11 +75,10 @@ public class ClientsClientThreadListener extends Client {
 						System.out.println("---waiting for release message from id "+ client_id+"--");
 
 						o_out.writeObject(return_message);
-					
-					} else {
-						//lower id = high priority
 
-						if(pendingReleaseToReceive != 0 && pendingReleaseToReceive < client_id) {
+					} else if (pendingReleaseToReceive != 0 && pendingRepliesToReceive.size() == 0) {
+						//lower id = high priority
+						if(pendingReleaseToReceive < client_id) {
 
 							return_message.setId(id);
 							return_message.setType(MessageType.FAILED);
@@ -107,6 +103,10 @@ public class ClientsClientThreadListener extends Client {
 							client_socket_map.getO_out().writeObject(return_message);
 						}
 
+					} else if (pendingReleaseToReceive == 0 && pendingRepliesToReceive.size() != 0) {
+						//Shouldn't happen
+						System.out.print("----SHOULD NOT BE HERE----");
+						throw new Exception("---DOOMED---");
 					}
 					
 				}
