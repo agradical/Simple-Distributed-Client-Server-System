@@ -142,10 +142,9 @@ public class ClientsClientThreadListener extends Client {
 				}
 				
 				if(message.getType().equals(MessageType.RELEASE)) {
-					
-					System.out.println("---release message from id "+ message.getId()+" received--");
-					
+										
 					if(pendingReleaseToReceive == client_id) {
+						System.out.println("---release message from id "+ client_id+" received--");
 
 						pendingReleaseToReceive = 0;
 						

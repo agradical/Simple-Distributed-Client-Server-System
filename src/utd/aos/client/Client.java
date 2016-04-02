@@ -109,6 +109,7 @@ public class Client implements Runnable{
 						new ClientMainThread(operation).run();//).start();
 						
 					} else {
+						System.out.println("--waiting for replies semaphore in other request--");
 						gotallReplies.acquire();
 						serveOthersRequest(request_fifo.remove());
 						gotallReplies.release();

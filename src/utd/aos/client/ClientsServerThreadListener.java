@@ -23,7 +23,7 @@ public class ClientsServerThreadListener extends Client {
 				gotFailedMessageFrom.put(client_id, true);
 				pendingReplyofEnquire = 0;
 				
-				//System.out.println("--release enquire sema(failed)-");
+				System.out.println("--Got failed from "+client_id+"-");
 				//gotReplyofEnquire.release();
 			}
 			
