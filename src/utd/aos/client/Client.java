@@ -14,9 +14,9 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.HashMap;
-
+import java.util.LinkedList;
 import java.util.Map;
-import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Random;
 import java.util.concurrent.Semaphore;
 
@@ -35,7 +35,8 @@ public class Client implements Runnable{
 	public static Map<String, SocketMap> quorum;
 	public static Map<String, SocketMap> allClientsSockets;
 	public static Map<Integer, InetSocketAddress> otherClients;
-	public static Map<String, Integer> hostIdMap;
+	public static Map<String, Integer> hostIdMap;	
+	public static Map<String, SocketMap> allClientsListenerSockets;
 	
 	public static SocketMap serverSocketMap;
 	
@@ -46,7 +47,7 @@ public class Client implements Runnable{
 	
 	public static Semaphore gotallReplies = new Semaphore(1);
 	public static Semaphore gotallReleases = new Semaphore(1);
-	public static Semaphore gotReplyofEnquire = new Semaphore(1);
+	//public static Semaphore gotReplyofEnquire = new Semaphore(1);
 	
 	public static int pendingReleaseToReceive;
 	public static int pendingReplyofEnquire;
@@ -55,7 +56,8 @@ public class Client implements Runnable{
 	public static Map<Integer, Boolean> gotFailedMessageFrom = new HashMap<Integer, Boolean>();
 	public static Map<Integer, Boolean> sentYieldMessageTo = new HashMap<Integer, Boolean>();
 	
-	public static PriorityQueue<Integer> fifo = new PriorityQueue<Integer>();
+	//public static Queue<Integer> pq_fifo = new PriorityQueue<Integer>();
+	public static Queue<Integer> request_fifo = new LinkedList<Integer>(); 
 	
 	public State state = State.AVAILABLE;
 	public enum State {
@@ -96,15 +98,29 @@ public class Client implements Runnable{
 
 				
 				System.out.println("--waiting to acquire mutex--");			
-				gotallReleases.acquire();
-				if(getMutex()) {
-					System.out.println("--starting CS--");
-					request(operation);
+				request_fifo.add(id);
+				
+				while(!request_fifo.isEmpty()) {
+					gotallReleases.acquire();
+
+					if(request_fifo.peek() == id) {
+
+						if(getMutex()) {
+							System.out.println("--starting CS--");
+							request(operation);
+
+							System.out.println("--Exiting CS--");
+							System.out.println("--Realeasing release semaphore--");
+							request_fifo.remove();
+						}
+					} else {
+						serveOthersRequest(request_fifo.remove());
+					}
 					
-					System.out.println("--Exiting CS--");
-					System.out.println("--Realeasing release semaphore--");
 					gotallReleases.release();
+
 				}
+				
 				sendRelease();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -114,6 +130,82 @@ public class Client implements Runnable{
 		shutdown();			
 	}
 
+	public void serveOthersRequest(int client_id) throws InterruptedException, IOException {
+		InetSocketAddress host = otherClients.get(client_id);
+		String socketHostname = host.getHostName();
+		
+		SocketMap socketMap = allClientsListenerSockets.get(socketHostname);
+		MutexMessage return_message = new MutexMessage();
+
+		if(pendingReleaseToReceive == 0 ) {
+						
+			if(pendingRepliesToReceive.size() == 0) {
+				
+				pendingReleaseToReceive = client_id;
+
+				return_message.setId(id);
+				return_message.setType(MessageType.REPLY);
+
+				System.out.println("--got request message from "+socketHostname+"--");
+				System.out.println("--REPLY to "+socketHostname+"--");
+				System.out.println("---waiting for release message from id "+ client_id+"--");
+
+				socketMap.getO_out().writeObject(return_message);
+				
+			} else if (pendingRepliesToReceive.size() != 0) {
+				
+				pendingReleaseToReceive = client_id;
+
+				return_message.setId(id);
+				return_message.setType(MessageType.REPLY);
+
+				System.out.println("--got concurrent request message from "+socketHostname+"--");
+				System.out.println("--REPLY to "+socketHostname+"--");
+				System.out.println("--waiting for release message from id "+ client_id+"--");
+
+				socketMap.getO_out().writeObject(return_message);
+				
+			}
+			
+
+		} else if (pendingReleaseToReceive != 0) {
+			
+			//lower id = high priority
+			if(pendingReleaseToReceive < client_id) {
+
+				return_message.setId(id);
+				return_message.setType(MessageType.FAILED);
+
+				System.out.println("--FAILED SENT to "+socketHostname+"--");
+				socketMap.getO_out().writeObject(return_message);
+
+			} else {
+				
+				//System.out.println("--wait for enquire sema(request)-");
+				//gotReplyofEnquire.acquire();
+				if(pendingReplyofEnquire != 0) {
+				
+					request_fifo.add(client_id);
+				
+				} else {
+					
+					pendingReplyofEnquire = pendingReleaseToReceive;
+
+					return_message.setId(id);
+					return_message.setType(MessageType.ENQUIRE);
+
+					System.out.println("--ENQUIRE SENT to "+socketHostname+"--");
+
+					InetSocketAddress addr = otherClients.get(pendingReleaseToReceive);
+					String client_hostname = addr.getHostName();
+					SocketMap client_socket_map = allClientsSockets.get(client_hostname);
+
+					client_socket_map.getO_out().writeObject(return_message);
+				
+				}
+			}
+		}
+	}
 	
 	public void init() {
 		
@@ -183,7 +275,6 @@ public class Client implements Runnable{
 		gotFailedMessageFrom = new HashMap<Integer, Boolean>();
 		sentYieldMessageTo = new HashMap<Integer, Boolean>();
 		
-		fifo = new PriorityQueue<Integer>();
 	}
 	
 	public boolean getMutex() throws InterruptedException, IOException {

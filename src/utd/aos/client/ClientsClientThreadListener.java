@@ -4,8 +4,10 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.Iterator;
 
 import utd.aos.utils.MutexMessage;
 import utd.aos.utils.MutexMessage.MessageType;
@@ -21,7 +23,8 @@ public class ClientsClientThreadListener extends Client {
 	@Override
 	public void run() {
 		try {	
-			String socketHostname = socket.getInetAddress().getHostName();
+			InetAddress inet_addr = socket.getInetAddress();
+			String socketHostname = inet_addr.getHostName();
 			
 			InputStream in = socket.getInputStream();
 			OutputStream out = socket.getOutputStream();
@@ -29,6 +32,11 @@ public class ClientsClientThreadListener extends Client {
 			ObjectOutputStream o_out = new ObjectOutputStream(out);
 			ObjectInputStream o_in = new ObjectInputStream(in);
 		
+			
+			SocketMap socketMap = new SocketMap(socket, o_out, o_in);
+			
+			allClientsListenerSockets.put(socketHostname, socketMap);
+			
 			while(!socket.isClosed()) {
 
 				Object object = null;
@@ -54,17 +62,10 @@ public class ClientsClientThreadListener extends Client {
 					} else {
 						gotallReleases.acquire();
 					}*/
-					
-					if(pendingReplyofEnquire != 0) {
 						
-						System.out.println("--wait for enquire sema(request)-");
-						gotReplyofEnquire.acquire();
-						gotReplyofEnquire.release();
-					
-					}
 					
 					if(pendingReleaseToReceive == 0 ) {
-						
+												
 						System.out.println("--wait for release sema(request)-");
 						gotallReleases.acquire();
 						
@@ -110,27 +111,36 @@ public class ClientsClientThreadListener extends Client {
 
 						} else {
 							
-							System.out.println("--wait for enquire sema(request)-");
-							gotReplyofEnquire.acquire();
-							pendingReplyofEnquire = pendingReleaseToReceive;
+							//System.out.println("--wait for enquire sema(request)-");
+							//gotReplyofEnquire.acquire();
+							if(pendingReplyofEnquire != 0) {
 							
-							return_message.setId(id);
-							return_message.setType(MessageType.ENQUIRE);
+								request_fifo.add(client_id);
 							
-							System.out.println("--ENQUIRE SENT to "+socketHostname+"--");
+							} else {
+								
+								pendingReplyofEnquire = pendingReleaseToReceive;
 
-							InetSocketAddress addr = otherClients.get(pendingReleaseToReceive);
-							String client_hostname = addr.getHostName();
-							SocketMap client_socket_map = allClientsSockets.get(client_hostname);
+								return_message.setId(id);
+								return_message.setType(MessageType.ENQUIRE);
 
-							client_socket_map.getO_out().writeObject(return_message);
-						
+								System.out.println("--ENQUIRE SENT to "+socketHostname+"--");
+
+								InetSocketAddress addr = otherClients.get(pendingReleaseToReceive);
+								String client_hostname = addr.getHostName();
+								SocketMap client_socket_map = allClientsSockets.get(client_hostname);
+
+								client_socket_map.getO_out().writeObject(return_message);
+							
+							}
 						}
-					} 
+					}
 				}
 				
 				if(message.getType().equals(MessageType.RELEASE)) {
+					
 					System.out.println("---release message from id "+ message.getId()+" received--");
+					
 					if(pendingReleaseToReceive == client_id) {
 
 						pendingReleaseToReceive = 0;
@@ -145,7 +155,7 @@ public class ClientsClientThreadListener extends Client {
 					//sends grant or reply to top request in the queue
 					//TODO
 					
-					if(pendingReplyofEnquire != 0) {
+					/*if(pendingReplyofEnquire != 0) {
 						
 						System.out.println("--wait for enquire sema(enquire)-");
 						gotReplyofEnquire.acquire();
@@ -153,7 +163,7 @@ public class ClientsClientThreadListener extends Client {
 						System.out.println("--released enquire sema(enquire)-");
 						gotReplyofEnquire.release();
 					
-					}
+					}*/
 					
 					if(gotFailedMessageFrom != null && gotFailedMessageFrom.size() != 0) {
 						
@@ -179,20 +189,39 @@ public class ClientsClientThreadListener extends Client {
 
 						client_socket_map.getO_out().writeObject(return_message);
 					
-					} 
+					} else {
+						//enquire queue
+					}
 				}
 				
 				if(message.getType().equals(MessageType.YIELD)) {
 					//sends grant or reply to top request in the queue
 					//TODO send to top request
-					System.out.println("--released enquire sema(yield)-");
-					gotReplyofEnquire.release();
+					//System.out.println("--released enquire sema(yield)-");
+					//gotReplyofEnquire.release();
+					
 					pendingReplyofEnquire = 0;
 					
-					fifo.add(client_id);
+					request_fifo.add(client_id);
 					
-					Integer client_granted = fifo.remove();
-					InetSocketAddress addr = otherClients.get(client_granted);
+					Iterator<Integer> iterator = request_fifo.iterator();
+					int min_id_queued = 100;
+					while(iterator.hasNext()) {
+						Integer i = iterator.next();
+						if(i < min_id_queued) {
+							min_id_queued = i;
+						}
+					}
+					
+					while(iterator.hasNext()) {
+						Integer i = iterator.next();
+						if(i == min_id_queued) {
+							iterator.remove();
+						}
+					}
+					
+					
+					InetSocketAddress addr = otherClients.get(min_id_queued);
 					String client_hostname = addr.getHostName();
 					SocketMap client_socket_map = allClientsSockets.get(client_hostname);
 							
