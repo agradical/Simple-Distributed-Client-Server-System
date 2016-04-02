@@ -178,8 +178,6 @@ public class ClientsClientThreadListener extends Client {
 						
 						System.out.println("--YIELD SENT to "+socketHostname+"--");
 
-						pendingRepliesToReceive.put(client_id, true);
-
 						o_out.writeObject(return_message);
 					
 					} else if (sentYieldMessageTo != null && sentYieldMessageTo.size() != 0) {
@@ -192,9 +190,7 @@ public class ClientsClientThreadListener extends Client {
 						SocketMap client_socket_map = allClientsSockets.get(client_hostname);
 						
 						System.out.println("--YIELD SENT to "+client_hostname+"--");
-						
-						pendingRepliesToReceive.put(client_id, true);
-						
+												
 						client_socket_map.getO_out().writeObject(return_message);
 					
 					} else {

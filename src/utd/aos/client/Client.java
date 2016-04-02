@@ -105,20 +105,14 @@ public class Client implements Runnable{
 					if(request_fifo.peek() == id) {
 						
 						request_fifo.remove();
-						if(getMutex()) {
-							System.out.println("--starting CS--");
-							
-							request(operation);
-
-							System.out.println("--Exiting CS--");
-						}
-					} else {
 						
+						new Thread(new ClientMainThread(operation)).start();
+						
+					} else {
 						serveOthersRequest(request_fifo.remove());
-					
 					}
 				}				
-				sendRelease();
+				
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -236,6 +230,7 @@ public class Client implements Runnable{
 					} else {
 						allClientsSockets.put(addr.getHostName(), socketmap);
 					}
+					
 					System.out.println("Connect success: "+ip.getHostName()+"->"+addr.getHostName());
 
 					break;
@@ -276,8 +271,8 @@ public class Client implements Runnable{
 		
 		System.out.println("--waiting for reply semaphore--");
 		
-		gotallReplies.acquire();
 		gotallReleases.acquire();
+		gotallReplies.acquire();
 		
 		for(Map.Entry<String, SocketMap> entry: quorum.entrySet()) {
 			SocketMap quorum_client = entry.getValue();
@@ -294,7 +289,7 @@ public class Client implements Runnable{
 			Thread t = new Thread(clientServer);
 			t.start();
 		}
-
+		
 		return true;
 	}
 	
