@@ -56,14 +56,20 @@ public class ClientsClientThreadListener extends Client {
 					}*/
 					
 					if(pendingReplyofEnquire != 0) {
+						
+						System.out.println("--wait for enquire sema(request)-");
 						gotReplyofEnquire.acquire();
 						gotReplyofEnquire.release();
+					
 					}
 					
 					if(pendingReleaseToReceive == 0 ) {
 						
+						System.out.println("--wait for release sema(request)-");
 						gotallReleases.acquire();
+						
 						if(pendingRepliesToReceive.size() == 0) {
+							
 							pendingReleaseToReceive = client_id;
 
 							return_message.setId(id);
@@ -74,6 +80,7 @@ public class ClientsClientThreadListener extends Client {
 							System.out.println("---waiting for release message from id "+ client_id+"--");
 
 							o_out.writeObject(return_message);
+							
 						} else if (pendingRepliesToReceive.size() != 0) {
 							
 							pendingReleaseToReceive = client_id;
@@ -86,6 +93,7 @@ public class ClientsClientThreadListener extends Client {
 							System.out.println("--waiting for release message from id "+ client_id+"--");
 
 							o_out.writeObject(return_message);
+							
 						}
 						
 
@@ -102,6 +110,7 @@ public class ClientsClientThreadListener extends Client {
 
 						} else {
 							
+							System.out.println("--wait for enquire sema(request)-");
 							gotReplyofEnquire.acquire();
 							pendingReplyofEnquire = pendingReleaseToReceive;
 							
@@ -115,8 +124,8 @@ public class ClientsClientThreadListener extends Client {
 							SocketMap client_socket_map = allClientsSockets.get(client_hostname);
 
 							client_socket_map.getO_out().writeObject(return_message);
+						
 						}
-
 					} 
 				}
 				
@@ -125,6 +134,8 @@ public class ClientsClientThreadListener extends Client {
 					if(pendingReleaseToReceive == client_id) {
 
 						pendingReleaseToReceive = 0;
+						
+						System.out.println("--wait for enquire sema(release)-");
 						gotallReleases.release();
 					
 					}
@@ -135,8 +146,13 @@ public class ClientsClientThreadListener extends Client {
 					//TODO
 					
 					if(pendingReplyofEnquire != 0) {
+						
+						System.out.println("--wait for enquire sema(enquire)-");
 						gotReplyofEnquire.acquire();
+						
+						System.out.println("--released enquire sema(enquire)-");
 						gotReplyofEnquire.release();
+					
 					}
 					
 					if(gotFailedMessageFrom != null && gotFailedMessageFrom.size() != 0) {
@@ -162,12 +178,14 @@ public class ClientsClientThreadListener extends Client {
 						System.out.println("--YIELD SENT to "+client_hostname+"--");
 
 						client_socket_map.getO_out().writeObject(return_message);
+					
 					} 
 				}
 				
 				if(message.getType().equals(MessageType.YIELD)) {
 					//sends grant or reply to top request in the queue
 					//TODO send to top request
+					System.out.println("--released enquire sema(yield)-");
 					gotReplyofEnquire.release();
 					pendingReplyofEnquire = 0;
 					
@@ -184,6 +202,7 @@ public class ClientsClientThreadListener extends Client {
 					System.out.println("--GRANT SENT to "+socketHostname+"--");
 					
 					client_socket_map.getO_out().writeObject(return_message);
+				
 				}
 			}
 			

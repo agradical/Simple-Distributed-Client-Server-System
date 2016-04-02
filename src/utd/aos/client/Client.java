@@ -185,11 +185,11 @@ public class Client implements Runnable{
 	public boolean getMutex() throws InterruptedException, IOException {
 		
 		System.out.println("--trying to acquire mutex--");
+		
 		gotallReleases.acquire();
-		
 		System.out.println("--got release semaphore--");
-		gotallReplies.acquire();
 		
+		gotallReplies.acquire();
 		System.out.println("--got reply semaphore--");
 
 		for(Map.Entry<String, SocketMap> entry: quorum.entrySet()) {
@@ -207,8 +207,8 @@ public class Client implements Runnable{
 			Thread t = new Thread(clientServer);
 			t.start();
 		}
-		gotallReplies.acquire();
-		gotallReplies.release();
+		
+		System.out.println("--Exiting CS--");
 		gotallReleases.release();
 
 		return true;

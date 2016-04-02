@@ -22,6 +22,8 @@ public class ClientsServerThreadListener extends Client {
 			if(message.getType().equals(MessageType.FAILED)) {
 				gotFailedMessageFrom.put(client_id, true);
 				pendingReplyofEnquire = 0;
+				
+				System.out.println("--release enquire sema(failed)-");
 				gotReplyofEnquire.release();
 			}
 			
@@ -40,6 +42,7 @@ public class ClientsServerThreadListener extends Client {
 					
 					gotallReplies.release();
 					System.out.println("--releasing allreply mutex--");
+				
 				}
 			}
 			
