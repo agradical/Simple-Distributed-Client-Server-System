@@ -106,10 +106,12 @@ public class Client implements Runnable{
 						
 						request_fifo.remove();
 						
-						new Thread(new ClientMainThread(operation)).start();
+						new ClientMainThread(operation).run();//).start();
 						
 					} else {
+						gotallReplies.acquire();
 						serveOthersRequest(request_fifo.remove());
+						gotallReplies.release();
 					}
 				}				
 				
