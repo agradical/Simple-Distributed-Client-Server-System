@@ -97,27 +97,27 @@ public class Client implements Runnable{
 				operation.setArg(id+" : "+count+" : "+InetAddress.getLocalHost().getHostName()+"\n");
 
 				
-				System.out.println("--waiting to acquire mutex--");			
+				System.out.println("--adding my request to fifo--");			
 				request_fifo.add(id);
 				
 				while(!request_fifo.isEmpty()) {
 					
 					if(request_fifo.peek() == id) {
-						gotallReleases.acquire();
+						
+						request_fifo.remove();
 						if(getMutex()) {
 							System.out.println("--starting CS--");
+							
 							request(operation);
 
 							System.out.println("--Exiting CS--");
-							System.out.println("--Realeasing release semaphore--");
-							request_fifo.remove();
 						}
 					} else {
+						
 						serveOthersRequest(request_fifo.remove());
+					
 					}
-
-				}
-				
+				}				
 				sendRelease();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -143,7 +143,6 @@ public class Client implements Runnable{
 				return_message.setId(id);
 				return_message.setType(MessageType.REPLY);
 
-				System.out.println("--got request message from "+socketHostname+"--");
 				System.out.println("--REPLY to "+socketHostname+"--");
 				System.out.println("---waiting for release message from id "+ client_id+"--");
 
@@ -156,7 +155,6 @@ public class Client implements Runnable{
 				return_message.setId(id);
 				return_message.setType(MessageType.REPLY);
 
-				System.out.println("--got concurrent request message from "+socketHostname+"--");
 				System.out.println("--REPLY to "+socketHostname+"--");
 				System.out.println("--waiting for release message from id "+ client_id+"--");
 
@@ -277,8 +275,10 @@ public class Client implements Runnable{
 	public boolean getMutex() throws InterruptedException, IOException {
 		
 		System.out.println("--waiting for reply semaphore--");
+		
 		gotallReplies.acquire();
-
+		gotallReleases.acquire();
+		
 		for(Map.Entry<String, SocketMap> entry: quorum.entrySet()) {
 			SocketMap quorum_client = entry.getValue();
 			String hostname = quorum_client.getAddr().getHostName();

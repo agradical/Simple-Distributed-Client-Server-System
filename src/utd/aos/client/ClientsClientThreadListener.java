@@ -223,7 +223,6 @@ public class ClientsClientThreadListener extends Client {
 						}
 					}
 					
-					
 					InetSocketAddress addr = otherClients.get(min_id_queued);
 					String client_hostname = addr.getHostName();
 					SocketMap client_socket_map = allClientsSockets.get(client_hostname);
