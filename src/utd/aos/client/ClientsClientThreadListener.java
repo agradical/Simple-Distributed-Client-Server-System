@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.Iterator;
 
 import utd.aos.utils.MutexMessage;
@@ -35,8 +36,11 @@ public class ClientsClientThreadListener extends Client {
 			
 			SocketMap socketMap = new SocketMap(socket, o_out, o_in);
 			
+			if(allClientsListenerSockets == null) {
+				allClientsListenerSockets = new HashMap<String, SocketMap>();
+			}
 			allClientsListenerSockets.put(socketHostname, socketMap);
-			
+
 			while(!socket.isClosed()) {
 
 				Object object = null;
