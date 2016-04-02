@@ -95,11 +95,15 @@ public class Client implements Runnable{
 				operation.setArg(id+" : "+count+" : "+InetAddress.getLocalHost().getHostName()+"\n");
 
 				
+				System.out.println("--waiting to acquire mutex--");			
+				gotallReleases.acquire();
 				if(getMutex()) {
 					System.out.println("--starting CS--");
 					request(operation);
-					System.out.println("--done with CS--");
-
+					
+					System.out.println("--Exiting CS--");
+					System.out.println("--Realeasing release semaphore--");
+					gotallReleases.release();
 				}
 				sendRelease();
 			} catch (Exception e) {
@@ -184,13 +188,8 @@ public class Client implements Runnable{
 	
 	public boolean getMutex() throws InterruptedException, IOException {
 		
-		System.out.println("--trying to acquire mutex--");
-		
-		gotallReleases.acquire();
-		System.out.println("--got release semaphore--");
-		
+		System.out.println("--waiting for reply semaphore--");
 		gotallReplies.acquire();
-		System.out.println("--got reply semaphore--");
 
 		for(Map.Entry<String, SocketMap> entry: quorum.entrySet()) {
 			SocketMap quorum_client = entry.getValue();
@@ -207,9 +206,6 @@ public class Client implements Runnable{
 			Thread t = new Thread(clientServer);
 			t.start();
 		}
-		
-		System.out.println("--Exiting CS--");
-		gotallReleases.release();
 
 		return true;
 	}

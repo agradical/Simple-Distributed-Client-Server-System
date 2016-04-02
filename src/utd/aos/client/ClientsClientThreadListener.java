@@ -135,7 +135,7 @@ public class ClientsClientThreadListener extends Client {
 
 						pendingReleaseToReceive = 0;
 						
-						System.out.println("--wait for enquire sema(release)-");
+						System.out.println("--release release sema(release)-");
 						gotallReleases.release();
 					
 					}
