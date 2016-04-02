@@ -101,10 +101,9 @@ public class Client implements Runnable{
 				request_fifo.add(id);
 				
 				while(!request_fifo.isEmpty()) {
-					gotallReleases.acquire();
-
+					
 					if(request_fifo.peek() == id) {
-
+						gotallReleases.acquire();
 						if(getMutex()) {
 							System.out.println("--starting CS--");
 							request(operation);
@@ -116,8 +115,6 @@ public class Client implements Runnable{
 					} else {
 						serveOthersRequest(request_fifo.remove());
 					}
-					
-					gotallReleases.release();
 
 				}
 				

@@ -71,7 +71,6 @@ public class ClientsClientThreadListener extends Client {
 					if(pendingReleaseToReceive == 0 ) {
 												
 						System.out.println("--wait for release sema(request)-");
-						gotallReleases.acquire();
 						
 						if(pendingRepliesToReceive.size() == 0) {
 							
