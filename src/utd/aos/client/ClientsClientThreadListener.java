@@ -122,6 +122,8 @@ public class ClientsClientThreadListener extends Client {
 
 								record.enquire++;
 								
+								sentEnquire = 1;
+								
 							} else {
 								
 								request_fifo.add(client_id);
@@ -162,7 +164,7 @@ public class ClientsClientThreadListener extends Client {
 					record.enquire++;
 					System.out.println("--RECV ENQUIRE "+socketHostname);
 					
-					while(gotFailed != 1 && sentYield != 1 && pendingReleaseToReceive != 0) {
+					while(gotFailed != 1 && sentYield != 1 && pendingReleaseToReceive != 0 && sentEnquire != 1) {
 						Thread.sleep(20);
 						System.out.println("WAITING for ENQUIRE to process");
 					}
@@ -180,9 +182,7 @@ public class ClientsClientThreadListener extends Client {
 						
 						record.reply++;
 						
-					}
-					
-					if(gotFailed == 1) {
+					} else if(gotFailed == 1) {
 
 						return_message.setId(id);
 						return_message.setType(MessageType.YIELD);
@@ -211,7 +211,20 @@ public class ClientsClientThreadListener extends Client {
 
 						record.yield++;
 
-					}
+					} else {
+						
+						return_message.setId(id);
+						return_message.setType(MessageType.YIELD);
+
+						sentYieldMessageTo.put(client_id, true);
+						sentYield = 1;
+
+						System.out.println("--SENT YIELD "+socketHostname+"--");
+
+						o_out.writeObject(return_message);
+
+						record.yield++;
+					} 
 					
 				}
 				
@@ -247,6 +260,7 @@ public class ClientsClientThreadListener extends Client {
 					}
 
 					pendingReleaseToReceive = min_id_queued;
+					sentEnquire = 0;
 					
 					InetSocketAddress addr = otherClients.get(min_id_queued);
 					

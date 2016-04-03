@@ -53,7 +53,8 @@ public class Client implements Runnable{
 	public static int pendingReleaseToReceive;
 	public static int gotFailed;
 	public static int sentYield;
-
+	public static int sentEnquire;
+	
 	public static boolean inprocess = false;
 	
 	public static Map<Integer, Boolean> pendingRepliesToReceive = new HashMap<Integer, Boolean>();
