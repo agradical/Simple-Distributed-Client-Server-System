@@ -49,7 +49,10 @@ public class ClientMainThread extends Client {
 
 			//System.out.println("--RELEASE allreply sema (Main thread)--");
 			//gotallReplies.release();
-			pendingReleaseToReceive = 0;			
+			pendingReleaseToReceive = 0;
+			gotFailed = 0;
+			sentYield = 0;
+			
 			sendRelease();
 			//request_fifo.remove();
 
