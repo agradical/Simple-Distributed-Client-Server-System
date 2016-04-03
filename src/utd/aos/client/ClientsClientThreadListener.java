@@ -5,6 +5,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.HashMap;
 
@@ -24,6 +25,7 @@ public class ClientsClientThreadListener extends Client {
 	public void run() {
 		try {	
 			InetAddress inet_addr = socket.getInetAddress();
+
 			String socketHostname = inet_addr.getHostName();
 			
 			InputStream in = socket.getInputStream();
@@ -32,8 +34,10 @@ public class ClientsClientThreadListener extends Client {
 			ObjectOutputStream o_out = new ObjectOutputStream(out);
 			ObjectInputStream o_in = new ObjectInputStream(in);
 		
+			//DANGER --its just a workaround
+			InetSocketAddress addr = new InetSocketAddress(inet_addr, 1818);
 			
-			SocketMap socketMap = new SocketMap(socket, o_out, o_in);
+			SocketMap socketMap = new SocketMap(socket, o_out, o_in, addr);
 			
 			if(allClientsListenerSockets == null) {
 				allClientsListenerSockets = new HashMap<String, SocketMap>();
