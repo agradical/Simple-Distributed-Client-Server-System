@@ -114,26 +114,7 @@ public class ClientsServerThreadListener extends Client {
 				record.reply++;
 			}
 			
-			if(message.getType().equals(MessageType.GRANT)) {
-
-				System.out.println("--RECV GRANT "+hostname+"--");
-				
-				if(sentYieldMessageTo.containsKey(client_id)) {
-					sentYieldMessageTo.remove(client_id);
-					if(sentYieldMessageTo.size() == 0) {
-						sentYield = 0;
-					}
-				}
-				
-				if(pendingRepliesToReceive.containsKey(client_id)) {
-					pendingRepliesToReceive.remove(client_id);
-				}
-				
-				if(pendingReleaseToReceive == client_id)  {
-					pendingReleaseToReceive = 0;
-				}
-				record.grant++;
-			}
+			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

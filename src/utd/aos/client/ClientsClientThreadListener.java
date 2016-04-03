@@ -146,6 +146,7 @@ public class ClientsClientThreadListener extends Client {
 					}
 				}
 				
+				
 				if(message.getType().equals(MessageType.ENQUIRE)) {
 					//sends grant or reply to top request in the queue
 					//TODO
@@ -226,6 +227,28 @@ public class ClientsClientThreadListener extends Client {
 					} 
 					
 				}
+				
+				if(message.getType().equals(MessageType.GRANT)) {
+
+					System.out.println("--RECV GRANT "+socketHostname+"--");
+					
+					if(sentYieldMessageTo.containsKey(client_id)) {
+						sentYieldMessageTo.remove(client_id);
+						if(sentYieldMessageTo.size() == 0) {
+							sentYield = 0;
+						}
+					}
+					
+					if(pendingRepliesToReceive.containsKey(client_id)) {
+						pendingRepliesToReceive.remove(client_id);
+					}
+					
+					if(pendingReleaseToReceive == client_id)  {
+						pendingReleaseToReceive = 0;
+					}
+					record.grant++;
+				}
+				
 			}
 			
 			this.socket.close();
