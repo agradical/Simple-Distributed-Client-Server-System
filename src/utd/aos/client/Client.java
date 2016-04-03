@@ -106,9 +106,9 @@ public class Client implements Runnable{
 				
 				
 				
-				while(pendingReleaseToReceive != 0) {
-					Thread.sleep(20);
-				} 
+				//while(pendingReleaseToReceive != 0) {
+				//	Thread.sleep(20);
+				//} 
 				
 				request_fifo.add(id);
 				

@@ -164,10 +164,10 @@ public class ClientsClientThreadListener extends Client {
 					record.enquire++;
 					System.out.println("--RECV ENQUIRE "+socketHostname);
 					
-					while(gotFailed != 1 && sentYield != 1 && sentEnquire != 1 && pendingReleaseToReceive != 0 ) {
-						Thread.sleep(20);
-						System.out.println("WAITING for ENQUIRE "+socketHostname);
-					}
+					//while(gotFailed != 1 && sentYield != 1 && sentEnquire != 1 && pendingReleaseToReceive != 0 ) {
+					//	Thread.sleep(20);
+					//	System.out.println("WAITING for ENQUIRE "+socketHostname);
+					//}
 					
 					if(pendingReleaseToReceive == 0) {
 						
@@ -254,12 +254,13 @@ public class ClientsClientThreadListener extends Client {
 			this.socket.close();
 		
 		} catch (Exception e) {
+			e.printStackTrace();
 			try {
 				shutdown();
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
-			e.printStackTrace();
+			
 		}	
 	}
 

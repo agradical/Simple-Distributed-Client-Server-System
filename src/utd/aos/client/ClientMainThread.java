@@ -24,16 +24,16 @@ public class ClientMainThread extends Client {
 			//System.out.println("--WAIT release sema ( Main thread)--");			
 			//gotallReleases.acquire();
 
-			while(pendingRepliesToReceive.size() != 0 || pendingReleaseToReceive != 0) {
+			//while(pendingRepliesToReceive.size() != 0 || pendingReleaseToReceive != 0) {
 				/*
 					if(pendingReleaseToReceive != 0)
 						System.out.println("---WAITING for all RELEASE");
 					else
 						System.out.println("---WAITING for all REPLIES");
 				 */
-				Thread.sleep(2);
+			//	Thread.sleep(2);
 
-			}
+			//}
 
 			pendingReleaseToReceive = id;
 
