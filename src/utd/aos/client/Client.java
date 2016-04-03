@@ -100,8 +100,11 @@ public class Client implements Runnable{
 				System.out.println("--adding my request to fifo--");			
 				request_fifo.add(id);
 				
-				int size = request_fifo.size();
 				
+				while(pendingReleaseToReceive != 0) {
+					Thread.sleep(20);
+				} 
+				int size = request_fifo.size();
 				while(size != 0) {
 					int top = request_fifo.remove();
 					if(top == id) {
