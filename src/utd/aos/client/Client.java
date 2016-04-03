@@ -51,6 +51,8 @@ public class Client implements Runnable{
 	public static int pendingReleaseToReceive;
 	public static int gotFailed;
 	public static int sentYield;
+
+	public static boolean inprocess = false;
 	
 	public static Map<Integer, Boolean> pendingRepliesToReceive = new HashMap<Integer, Boolean>();
 	//public static Map<Integer, Boolean> gotFailedMessageFrom = new HashMap<Integer, Boolean>();
@@ -105,7 +107,7 @@ public class Client implements Runnable{
 					Thread.sleep(20);
 				} 
 				int size = request_fifo.size();
-				while(size != 0) {
+				while(size != 0 && inprocess == false) {
 					int top = request_fifo.remove();
 					if(top == id) {
 						
