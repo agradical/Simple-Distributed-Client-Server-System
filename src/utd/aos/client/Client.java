@@ -174,7 +174,7 @@ public class Client implements Runnable{
 						handleGrant(req);
 					}
 
-					if(!inprocess){
+					if(inprocess && pendingRepliesToReceive.size() == 0 && pendingReleaseToReceive == 0){
 						break;
 					}
 
