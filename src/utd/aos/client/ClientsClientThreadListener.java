@@ -8,7 +8,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.HashMap;
-import java.util.Iterator;
 
 import utd.aos.utils.MutexMessage;
 import utd.aos.utils.MutexMessage.MessageType;
@@ -228,53 +227,24 @@ public class ClientsClientThreadListener extends Client {
 					
 				}
 				
-				if(message.getType().equals(MessageType.YIELD)) {	
-										
-					record.yield++;
-					
-					while(pendingReleaseToReceive != 0) {
-						Thread.sleep(200);
-						System.out.println("WAIT in YIELD for Release");
-					} 
-					
-					//request_fifo.add(client_id);
-					
-					Iterator<Integer> iterator = request_fifo.iterator();
-					int min_id_queued = 100;
-					while(iterator.hasNext()) {
-						Integer i = iterator.next();
-						if(i < min_id_queued) {
-							min_id_queued = i;
-						}
-					}
-					
-					while(iterator.hasNext()) {
-						Integer i = iterator.next();
-						if(i == min_id_queued) {
-							iterator.remove();
-						}
-					}
-					
-					if(min_id_queued == 100 || min_id_queued > client_id) {
-						min_id_queued = client_id;
-					}
+				if(message.getType().equals(MessageType.GRANT)) {
 
-					pendingReleaseToReceive = min_id_queued;
-					sentEnquire = 0;
+					System.out.println("--RECV GRANT "+socketHostname+"--");
 					
-					InetSocketAddress addr = otherClients.get(min_id_queued);
+					if(sentYieldMessageTo.containsKey(client_id)) {
+						sentYieldMessageTo.remove(client_id);
+						if(sentYieldMessageTo.size() == 0) {
+							sentYield = 0;
+						}
+					}
 					
+					if(pendingRepliesToReceive.containsKey(client_id)) {
+						pendingRepliesToReceive.remove(client_id);
+					}
 					
-					String client_hostname = addr.getHostName();
-					SocketMap client_socket_map = allClientsSockets.get(client_hostname);
-							
-					return_message.setId(id);
-					return_message.setType(MessageType.GRANT);
-					
-					System.out.println("--SENT GRANT "+client_hostname+"--");
-					
-					client_socket_map.getO_out().writeObject(return_message);
-					
+					if(pendingReleaseToReceive == client_id)  {
+						pendingReleaseToReceive = 0;
+					}
 					record.grant++;
 				}
 			}
