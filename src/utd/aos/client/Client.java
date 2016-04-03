@@ -290,6 +290,8 @@ public class Client implements Runnable{
 						allClientsSockets.put(addr.getHostName(), socketmap);
 					}
 					
+					new Thread(new ClientsServerThreadListener(socketmap)).start();
+					
 					System.out.println("Connect success: "+ip.getHostName()+"->"+addr.getHostName());
 
 					break;
@@ -375,9 +377,9 @@ public class Client implements Runnable{
 			quorum_client.getO_out().writeObject(message);
 			pendingRepliesToReceive.put(client_id, true);
 			
-			ClientsServerThreadListener clientServer = new ClientsServerThreadListener(quorum_client);
-			Thread t = new Thread(clientServer);
-			t.start();
+			//ClientsServerThreadListener clientServer = new ClientsServerThreadListener(quorum_client);
+			//Thread t = new Thread(clientServer);
+			//t.start();
 		}
 		
 		return true;
