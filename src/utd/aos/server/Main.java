@@ -78,7 +78,7 @@ public class Main {
 			conf_br.close();
 			
 			
-			String client_filename = "client.list";
+			String client_filename = "client_id.list";
 			File client_file = new File(client_filename);	
 			BufferedReader cl_br = new BufferedReader(new FileReader(client_file));
 			
