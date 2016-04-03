@@ -106,8 +106,8 @@ public class Client implements Runnable{
 				while(pendingReleaseToReceive != 0) {
 					Thread.sleep(20);
 				} 
-				int size = request_fifo.size();
-				while(size != 0 && inprocess == false) {
+				//int size = request_fifo.size();
+				while(!request_fifo.isEmpty()) {
 					int top = request_fifo.remove();
 					if(top == id) {
 						
@@ -127,7 +127,7 @@ public class Client implements Runnable{
 						//gotallReplies.release();
 					}
 					Thread.sleep(200);
-					size--;
+					//size--;
 				}				
 				
 			} catch (Exception e) {
