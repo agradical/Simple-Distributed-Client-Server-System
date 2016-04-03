@@ -94,8 +94,6 @@ public class ClientsClientThreadListener extends Client {
 
 						//lower id = high priority
 						if(pendingReleaseToReceive < client_id) {
-
-							fail_fifo.add(client_id);
 														
 							return_message.setId(id);
 							return_message.setType(MessageType.FAILED);
@@ -162,6 +160,7 @@ public class ClientsClientThreadListener extends Client {
 					}*/
 					
 					record.enquire++;
+					System.out.println("RECV ENQUIRE "+socketHostname);
 					
 					while(gotFailed != 1 && sentYield != 1) {
 						Thread.sleep(20);
