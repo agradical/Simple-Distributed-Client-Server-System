@@ -155,35 +155,32 @@ public class Client implements Runnable{
 					if(req.getType().equals(MessageType.REQUEST)) {
 						handleRequest(req, operation);
 					}
-					if(req.getType().equals(MessageType.REPLY)) {
+					else if(req.getType().equals(MessageType.REPLY)) {
 						handleReply(req);
 					}
-					if(req.getType().equals(MessageType.RELEASE)) {
+					else if(req.getType().equals(MessageType.RELEASE)) {
 						handleRelease(req);
 					}
-					if(req.getType().equals(MessageType.FAILED)) {
+					else if(req.getType().equals(MessageType.FAILED)) {
 						handleFail(req);
 					}
-					if(req.getType().equals(MessageType.ENQUIRE)) {
+					else if(req.getType().equals(MessageType.ENQUIRE)) {
 						handleEnquire(req);
 					}
-					if(req.getType().equals(MessageType.YIELD)) {
+					else if(req.getType().equals(MessageType.YIELD)) {
 						handleYield(req);
 					}
-					if(req.getType().equals(MessageType.GRANT)) {
+					else if(req.getType().equals(MessageType.GRANT)) {
 						handleGrant(req);
 					}
+					
+					if(!inprocess){
+						break;
+					}
+					
 				}
 				
-				while(inprocess) {
-					//wait
-					//Thread.sleep(50);
-					break;
-				}
 				
-				if(!inprocess){
-					break;
-				}
 				
 			} catch (Exception e) {
 				e.printStackTrace();
