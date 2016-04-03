@@ -13,7 +13,7 @@ public class ClientMainThread extends Client {
 	@Override
 	public void run() {
 		try {
-			inprocess = true;
+			
 			
 			long starttime = System.currentTimeMillis();
 

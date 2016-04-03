@@ -117,7 +117,7 @@ public class Client implements Runnable{
 					
 					int top = request_fifo.remove();
 					if(top == id) {
-
+						inprocess = true;
 						new Thread(new ClientMainThread(operation)).start();//).start();
 
 					} else {
