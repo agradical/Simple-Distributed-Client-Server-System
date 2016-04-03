@@ -43,13 +43,13 @@ public class ClientsServerThreadListener extends Client {
 				
 				record.yield++;
 				System.out.println("--RECV YIELD "+hostname);
-				while(pendingReleaseToReceive != 0) {
+				
+				while(pendingReleaseToReceive != id) {
 					Thread.sleep(200);
 					System.out.println("WAIT in YIELD for Release");
 				} 
 				
 				//request_fifo.add(client_id);
-				
 				Iterator<Integer> iterator = request_fifo.iterator();
 				int min_id_queued = 100;
 				while(iterator.hasNext()) {
