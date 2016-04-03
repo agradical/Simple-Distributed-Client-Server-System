@@ -113,6 +113,8 @@ public class Client implements Runnable{
 						System.out.println("--WAIT allreply sema (other request)--");
 						gotallReplies.acquire();
 						serveOthersRequest(request_fifo.remove());
+						
+						System.out.println("--RELEASE allreply sema (other request)--");
 						gotallReplies.release();
 					}
 				}				
@@ -266,9 +268,10 @@ public class Client implements Runnable{
 	
 	public boolean getMutex() throws InterruptedException, IOException {
 		
-		System.out.println("--waiting for reply semaphore--");
-		
+		System.out.println("--WAIT release sema (mutex)--");
 		gotallReleases.acquire();
+
+		System.out.println("--WAIT release sema (mutex)--");
 		gotallReplies.acquire();
 		
 		for(Map.Entry<String, SocketMap> entry: quorum.entrySet()) {
@@ -277,7 +280,7 @@ public class Client implements Runnable{
 			Integer client_id = hostIdMap.get(hostname);
 			MutexMessage message = new MutexMessage(id, MessageType.REQUEST);
 			
-			System.out.println("--sending request message to "+hostname+"--");
+			System.out.println("--SENT REQUEST "+hostname+"--");
 			
 			quorum_client.getO_out().writeObject(message);
 			pendingRepliesToReceive.put(client_id, true);
