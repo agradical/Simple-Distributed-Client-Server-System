@@ -34,18 +34,24 @@ public class ClientsServerThreadListener extends Client {
 				
 				pendingRepliesToReceive.remove(client_id);
 				
+				if(pendingRepliesToReceive.size() == 0) {
+					
+					//gotallReplies.release();
+					System.out.println("--RELEASING allreply sema in listener--");
+				
+				}
+			}
+			
+			if(message.getType().equals(MessageType.GRANT)) {
+
 				if(sentYieldMessageTo.containsKey(client_id)) {
 					sentYieldMessageTo.remove(client_id);
 					if(sentYieldMessageTo.size() == 0) {
 						sentYield = 0;
 					}
 				}
-				
-				if(pendingRepliesToReceive.size() == 0) {
-					
-					//gotallReplies.release();
-					System.out.println("--RELEASING allreply sema in listener--");
-				
+				if(pendingReleaseToReceive == client_id)  {
+					pendingReleaseToReceive = 0;
 				}
 			}
 			

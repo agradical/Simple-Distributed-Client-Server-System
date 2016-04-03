@@ -208,12 +208,19 @@ public class ClientsClientThreadListener extends Client {
 						}
 					}
 					
+					
+					
 					InetSocketAddress addr = otherClients.get(min_id_queued);
+					
+					if(pendingReleaseToReceive == 0) {
+						pendingReleaseToReceive = min_id_queued;
+					}
+					
 					String client_hostname = addr.getHostName();
 					SocketMap client_socket_map = allClientsSockets.get(client_hostname);
 							
 					return_message.setId(id);
-					return_message.setType(MessageType.REPLY);
+					return_message.setType(MessageType.GRANT);
 					
 					System.out.println("--SENT GRANT "+socketHostname+"--");
 					

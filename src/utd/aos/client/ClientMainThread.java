@@ -37,7 +37,7 @@ public class ClientMainThread extends Client {
 				//gotallReplies.release();
 				pendingReleaseToReceive = 0;			
 				sendRelease();
-				request_fifo.remove();
+				//request_fifo.remove();
 
 			}
 		} catch (Exception e) {

@@ -79,8 +79,8 @@ public class Client implements Runnable{
 		int count = 1;
 		while(count <= 40) {
 			Random rand = new Random();
-			Integer delay = rand.nextInt(40);
-			delay += 10;
+			Integer delay = rand.nextInt(400);
+			delay += 100;
 			
 			reset();
 			
@@ -103,19 +103,19 @@ public class Client implements Runnable{
 				int size = request_fifo.size();
 				
 				while(size != 0) {
-					
-					if(request_fifo.peek() == id) {
+					int top = request_fifo.remove();
+					if(top == id) {
 						
 						new ClientMainThread(operation).run();//).start();
 						
 					} else {
 						//System.out.println("--WAIT allreply sema (other request)--");
 						//gotallReplies.acquire();
-						serveOthersRequest(request_fifo.remove());
+						serveOthersRequest(top);
 						
 						if(pendingReleaseToReceive == 0) {
 							if(fail_fifo.size() != 0) {
-								serveOthersRequest(fail_fifo.remove());
+								serveOthersRequest(top);
 							}
 						}
 						//System.out.println("--RELEASE allreply sema (other request)--");
