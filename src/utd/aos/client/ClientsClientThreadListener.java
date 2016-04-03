@@ -96,7 +96,7 @@ public class ClientsClientThreadListener extends Client {
 						if(pendingReleaseToReceive < client_id) {
 
 							fail_fifo.add(client_id);
-
+														
 							return_message.setId(id);
 							return_message.setType(MessageType.FAILED);
 
@@ -163,46 +163,48 @@ public class ClientsClientThreadListener extends Client {
 					
 					record.enquire++;
 					
-					while(gotFailed == 1 || sentYield == 1) {
-						if(gotFailed == 1) {
-
-							return_message.setId(id);
-							return_message.setType(MessageType.YIELD);
-
-							sentYieldMessageTo.put(client_id, true);
-
-							sentYield = 1;
-							System.out.println("--SENT YIELD "+socketHostname+"--");
-
-							o_out.writeObject(return_message);
-							
-							record.yield++;
-							
-							break;
-
-						} else if (sentYield == 1) {
-
-							return_message.setId(id);
-							return_message.setType(MessageType.YIELD);
-							
-							sentYieldMessageTo.put(client_id, true);
-							sentYield = 1;
-							
-							InetSocketAddress addr = otherClients.get(client_id);
-							String client_hostname = addr.getHostName();
-							SocketMap client_socket_map = allClientsSockets.get(client_hostname);
-
-							System.out.println("--SENT YIELD "+client_hostname+"--");
-
-							client_socket_map.getO_out().writeObject(return_message);
-							
-							record.yield++;
-							
-							break;
-						}
-						Thread.sleep(200);
+					while(gotFailed != 1 && sentYield != 1) {
+						Thread.sleep(20);
 						System.out.println("WAITING for ENQUIRE to process");
 					}
+					
+					if(gotFailed == 1) {
+
+						return_message.setId(id);
+						return_message.setType(MessageType.YIELD);
+
+						sentYieldMessageTo.put(client_id, true);
+
+						sentYield = 1;
+						System.out.println("--SENT YIELD "+socketHostname+"--");
+
+						o_out.writeObject(return_message);
+
+						record.yield++;
+
+						break;
+
+					} else if (sentYield == 1) {
+
+						return_message.setId(id);
+						return_message.setType(MessageType.YIELD);
+
+						sentYieldMessageTo.put(client_id, true);
+						sentYield = 1;
+
+						InetSocketAddress addr = otherClients.get(client_id);
+						String client_hostname = addr.getHostName();
+						SocketMap client_socket_map = allClientsSockets.get(client_hostname);
+
+						System.out.println("--SENT YIELD "+client_hostname+"--");
+
+						client_socket_map.getO_out().writeObject(return_message);
+
+						record.yield++;
+
+						break;
+					}
+					
 				}
 				
 				if(message.getType().equals(MessageType.YIELD)) {	

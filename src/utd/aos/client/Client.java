@@ -112,7 +112,7 @@ public class Client implements Runnable{
 				request_fifo.add(id);
 				
 				//int size = request_fifo.size();
-				while(!request_fifo.isEmpty()) {
+				while(!request_fifo.isEmpty() || !fail_fifo.isEmpty() ) {
 
 					
 					int top = request_fifo.remove();
@@ -135,18 +135,13 @@ public class Client implements Runnable{
 					}
 
 					
-					while(!request_fifo.isEmpty() || inprocess == true) {
+					while(!request_fifo.isEmpty() || !fail_fifo.isEmpty() || inprocess == true) {
 
 						if (!request_fifo.isEmpty()) {
-
 							serveOthersRequest(request_fifo.remove());
-
-							if(pendingReleaseToReceive == 0) {
-								if(fail_fifo.size() != 0) {
-									Thread.sleep(20);
-									serveOthersRequest(fail_fifo.remove());
-								}
-							}				
+						}
+						if(!fail_fifo.isEmpty()) {
+							serveOthersRequest(fail_fifo.remove());	
 						}
 						Thread.sleep(20);
 					}
@@ -158,9 +153,10 @@ public class Client implements Runnable{
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			count++;
 			
 			printreport();
+			count++;
+
 		}
 		
 		try {
