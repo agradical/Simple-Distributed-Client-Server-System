@@ -21,13 +21,14 @@ public class ClientMainThread extends Client {
 				//gotallReleases.acquire();
 
 				while(pendingRepliesToReceive.size() != 0 || pendingReleaseToReceive != 0) {
-					
+					/*
 					if(pendingReleaseToReceive != 0)
 						System.out.println("---WAITING for all RELEASE");
 					else
 						System.out.println("---WAITING for all REPLIES");
-					
+					*/
 					Thread.sleep(20);
+					
 				}
 				
 				pendingReleaseToReceive = id;

@@ -109,7 +109,7 @@ public class Client implements Runnable{
 					int top = request_fifo.remove();
 					if(top == id) {
 						
-						new ClientMainThread(operation).run();//).start();
+						new Thread(new ClientMainThread(operation)).start();//).start();
 						
 					} else {
 						//System.out.println("--WAIT allreply sema (other request)--");
