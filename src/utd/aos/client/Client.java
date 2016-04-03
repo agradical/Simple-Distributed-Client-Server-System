@@ -57,7 +57,7 @@ public class Client implements Runnable{
 	public static Map<Integer, Boolean> sentYieldMessageTo = new HashMap<Integer, Boolean>();
 	
 	public static Queue<Integer> request_fifo = new LinkedList<Integer>(); 
-	public static Queue<Integer> enquire_fifo = new LinkedList<Integer>(); 
+	public static Queue<Integer> fail_fifo = new LinkedList<Integer>(); 
 
 	public State state = State.AVAILABLE;
 	public enum State {
@@ -100,7 +100,9 @@ public class Client implements Runnable{
 				System.out.println("--adding my request to fifo--");			
 				request_fifo.add(id);
 				
-				while(!request_fifo.isEmpty()) {
+				int size = request_fifo.size();
+				
+				while(size != 0) {
 					
 					if(request_fifo.peek() == id) {
 						
@@ -111,9 +113,15 @@ public class Client implements Runnable{
 						//gotallReplies.acquire();
 						serveOthersRequest(request_fifo.remove());
 						
+						if(pendingReleaseToReceive == 0) {
+							if(fail_fifo.size() != 0) {
+								serveOthersRequest(fail_fifo.remove());
+							}
+						}
 						//System.out.println("--RELEASE allreply sema (other request)--");
 						//gotallReplies.release();
 					}
+					size--;
 				}				
 				
 			} catch (Exception e) {
@@ -151,7 +159,7 @@ public class Client implements Runnable{
 			//lower id = high priority
 			if(pendingReleaseToReceive < client_id) {
 
-				request_fifo.add(client_id);
+				fail_fifo.add(client_id);
 
 				return_message.setId(id);
 				return_message.setType(MessageType.FAILED);
@@ -244,6 +252,7 @@ public class Client implements Runnable{
 	}
 	public void reset() {
 		
+		/*
 		pendingReleaseToReceive = 0;
 		gotFailed = 0;
 		sentYield = 0;
@@ -251,6 +260,7 @@ public class Client implements Runnable{
 		pendingRepliesToReceive = new HashMap<Integer, Boolean>();
 		gotFailedMessageFrom = new HashMap<Integer, Boolean>();
 		sentYieldMessageTo = new HashMap<Integer, Boolean>();
+		*/
 		
 	}
 	

@@ -92,7 +92,7 @@ public class ClientsClientThreadListener extends Client {
 							//lower id = high priority
 							if(pendingReleaseToReceive < client_id) {
 
-								request_fifo.add(client_id);
+								fail_fifo.add(client_id);
 
 								return_message.setId(id);
 								return_message.setType(MessageType.FAILED);
