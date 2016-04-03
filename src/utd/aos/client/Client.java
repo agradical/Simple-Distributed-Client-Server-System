@@ -121,6 +121,7 @@ public class Client implements Runnable{
 						//System.out.println("--RELEASE allreply sema (other request)--");
 						//gotallReplies.release();
 					}
+					Thread.sleep(200);
 					size--;
 				}				
 				

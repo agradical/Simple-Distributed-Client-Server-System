@@ -23,7 +23,7 @@ public class ClientsServerThreadListener extends Client {
 				
 				gotFailedMessageFrom.put(client_id, true);
 			
-				System.out.println("--RECV FAILED "+client_id+"-");
+				System.out.println("--RECV FAILED "+socketmap.getAddr().getHostName()+"-");
 				gotFailed = 1;
 			}
 			
@@ -44,6 +44,8 @@ public class ClientsServerThreadListener extends Client {
 			
 			if(message.getType().equals(MessageType.GRANT)) {
 
+				System.out.println("--RECV GRANT "+socketmap.getAddr().getHostName()+"--");
+				
 				if(sentYieldMessageTo.containsKey(client_id)) {
 					sentYieldMessageTo.remove(client_id);
 					if(sentYieldMessageTo.size() == 0) {

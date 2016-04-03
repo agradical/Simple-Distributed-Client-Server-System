@@ -137,7 +137,7 @@ public class ClientsClientThreadListener extends Client {
 				if(message.getType().equals(MessageType.RELEASE)) {
 										
 					if(pendingReleaseToReceive == client_id) {
-						System.out.println("---RECV RELEASE  "+ client_id+" received--");
+						System.out.println("---RECV RELEASE  "+ socketHostname+" --");
 
 						pendingReleaseToReceive = 0;
 						
