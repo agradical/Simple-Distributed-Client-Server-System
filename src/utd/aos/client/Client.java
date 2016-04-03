@@ -104,8 +104,6 @@ public class Client implements Runnable{
 					
 					if(request_fifo.peek() == id) {
 						
-						request_fifo.remove();
-						
 						new ClientMainThread(operation).run();//).start();
 						
 					} else {

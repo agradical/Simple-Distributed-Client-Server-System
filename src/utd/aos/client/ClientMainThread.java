@@ -19,20 +19,26 @@ public class ClientMainThread extends Client {
 
 				//System.out.println("--WAIT release sema ( Main thread)--");			
 				//gotallReleases.acquire();
-				pendingReleaseToReceive = id;
+
+				while(pendingRepliesToReceive.size() != 0) {
+					Thread.sleep(20);
+				}
 				
+				pendingReleaseToReceive = id;
+
 				System.out.println("--starting CS--");
 				request(operation);
 				System.out.println("--Exiting CS--");
 
 				//System.out.println("--RELEASE release sema (Main thread)--");
 				//gotallReleases.release();
-				
+
 				//System.out.println("--RELEASE allreply sema (Main thread)--");
 				//gotallReplies.release();
 				pendingReleaseToReceive = 0;			
-				
+
 				sendRelease();
+				
 			}
 		} catch (Exception e) {
 
