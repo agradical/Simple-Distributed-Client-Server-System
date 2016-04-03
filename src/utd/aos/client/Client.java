@@ -22,6 +22,7 @@ import java.util.Random;
 import java.util.concurrent.Semaphore;
 
 import utd.aos.utils.Message;
+import utd.aos.utils.MessageRecord;
 import utd.aos.utils.MutexMessage;
 import utd.aos.utils.MutexMessage.MessageType;
 import utd.aos.utils.Operations;
@@ -62,18 +63,8 @@ public class Client implements Runnable{
 	public static Queue<Integer> fail_fifo = new LinkedList<Integer>(); 
 
 	public static int count = 1;
-	public static MessageRecord record;
+	public static MessageRecord record = new MessageRecord();
 	
-	public class MessageRecord {
-		public int request;
-		public int reply;
-		public int release;
-		public int fail;
-		public int enquire;
-		public int yield;
-		public int grant;
-		public long time;
-	}
 	
 	public Client() {
 	
