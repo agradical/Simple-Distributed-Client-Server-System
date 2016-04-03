@@ -88,9 +88,12 @@ public class Client implements Runnable{
 		// TODO Auto-generated method stub
 		init();
 		
+		Random rand = new Random();
+		
 		while(count <= 40) {
-			Random rand = new Random();
+			
 			Integer delay = rand.nextInt(40);
+			
 			delay += 10;
 			
 			reset();
