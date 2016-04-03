@@ -147,18 +147,17 @@ public class Client implements Runnable{
 
 		if(pendingReleaseToReceive == 0 ) {
 						
-			if(pendingRepliesToReceive.size() != 0) {
 
-				pendingReleaseToReceive = client_id;
+			pendingReleaseToReceive = client_id;
 
-				return_message.setId(id);
-				return_message.setType(MessageType.REPLY);
+			return_message.setId(id);
+			return_message.setType(MessageType.REPLY);
 
-				System.out.println("-----SENT REPLY to "+socketHostname+"--");
+			System.out.println("-----SENT REPLY to "+socketHostname+"--");
 
-				socketMap.getO_out().writeObject(return_message);
+			socketMap.getO_out().writeObject(return_message);
 
-			} 
+
 
 		} else {
 			
