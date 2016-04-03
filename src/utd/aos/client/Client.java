@@ -51,6 +51,8 @@ public class Client implements Runnable{
 	
 	public static int pendingReleaseToReceive;
 	public static int pendingReplyofEnquire;
+	public static int gotFailed;
+	public static int sentYield;
 	
 	public static Map<Integer, Boolean> pendingRepliesToReceive = new HashMap<Integer, Boolean>();
 	public static Map<Integer, Boolean> gotFailedMessageFrom = new HashMap<Integer, Boolean>();
@@ -143,7 +145,7 @@ public class Client implements Runnable{
 				return_message.setId(id);
 				return_message.setType(MessageType.REPLY);
 
-				System.out.println("--SENT REPLY "+socketHostname+"--");
+				System.out.println("----SENT REPLY "+socketHostname+"--");
 
 				socketMap.getO_out().writeObject(return_message);
 				
@@ -154,7 +156,7 @@ public class Client implements Runnable{
 				return_message.setId(id);
 				return_message.setType(MessageType.REPLY);
 
-				System.out.println("--SENT REPLY to "+socketHostname+"--");
+				System.out.println("----SENT REPLY to "+socketHostname+"--");
 
 				socketMap.getO_out().writeObject(return_message);
 				
@@ -169,7 +171,7 @@ public class Client implements Runnable{
 				return_message.setId(id);
 				return_message.setType(MessageType.FAILED);
 
-				System.out.println("--SENT FAILED to "+socketHostname+"--");
+				System.out.println("----SENT FAILED to "+socketHostname+"--");
 				socketMap.getO_out().writeObject(return_message);
 
 			} else {
@@ -182,7 +184,7 @@ public class Client implements Runnable{
 				return_message.setId(id);
 				return_message.setType(MessageType.ENQUIRE);
 
-				System.out.println("--SENT ENQUIRE "+socketHostname+"--");
+				System.out.println("----SENT ENQUIRE "+socketHostname+"--");
 
 				InetSocketAddress addr = otherClients.get(pendingReleaseToReceive);
 				String client_hostname = addr.getHostName();
@@ -259,6 +261,8 @@ public class Client implements Runnable{
 		
 		pendingReleaseToReceive = 0;
 		pendingReplyofEnquire = 0;
+		gotFailed = 0;
+		sentYield = 0;
 		
 		pendingRepliesToReceive = new HashMap<Integer, Boolean>();
 		gotFailedMessageFrom = new HashMap<Integer, Boolean>();
@@ -268,10 +272,8 @@ public class Client implements Runnable{
 	
 	public boolean getMutex() throws InterruptedException, IOException {
 		
-		System.out.println("--WAIT release sema (mutex)--");
-		gotallReleases.acquire();
-
-		System.out.println("--WAIT release sema (mutex)--");
+		
+		System.out.println("--WAIT allreply sema (mutex)--");
 		gotallReplies.acquire();
 		
 		for(Map.Entry<String, SocketMap> entry: quorum.entrySet()) {

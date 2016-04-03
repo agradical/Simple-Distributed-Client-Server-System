@@ -16,18 +16,21 @@ public class ClientMainThread extends Client {
 			if(getMutex()) {
 				System.out.println("--WAIT allreply sema ( Main thread)--");			
 				gotallReplies.acquire();
+
+				System.out.println("--WAIT release sema ( Main thread)--");			
+				gotallReleases.acquire();
 				pendingReleaseToReceive = id;
 				
 				System.out.println("--starting CS--");
 				request(operation);
 				System.out.println("--Exiting CS--");
 
-				System.out.println("--RELEASE allreply sema (Main thread)--");
-				gotallReplies.release();
-				pendingReleaseToReceive = 0;
-				
 				System.out.println("--RELEASE release sema (Main thread)--");
 				gotallReleases.release();
+				
+				System.out.println("--RELEASE allreply sema (Main thread)--");
+				gotallReplies.release();
+				pendingReleaseToReceive = 0;			
 				
 				sendRelease();
 			}

@@ -143,7 +143,7 @@ public class ClientsClientThreadListener extends Client {
 					
 					}*/
 					
-					if(gotFailedMessageFrom != null && gotFailedMessageFrom.size() != 0) {
+					if(gotFailed == 1) {
 						
 						return_message.setId(id);
 						return_message.setType(MessageType.YIELD);
@@ -154,7 +154,7 @@ public class ClientsClientThreadListener extends Client {
 
 						o_out.writeObject(return_message);
 					
-					} else if (sentYieldMessageTo != null && sentYieldMessageTo.size() != 0) {
+					} else if (sentYield == 1) {
 												
 						return_message.setId(id);
 						return_message.setType(MessageType.YIELD);
@@ -178,7 +178,7 @@ public class ClientsClientThreadListener extends Client {
 					//System.out.println("--released enquire sema(yield)-");
 					//gotReplyofEnquire.release();
 					
-					pendingReplyofEnquire = 0;
+					sentYield = 1;
 					
 					request_fifo.add(client_id);
 					

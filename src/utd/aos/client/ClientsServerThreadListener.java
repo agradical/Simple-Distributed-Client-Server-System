@@ -26,6 +26,7 @@ public class ClientsServerThreadListener extends Client {
 			
 				System.out.println("--RECV FAILED "+client_id+"-");
 				//gotReplyofEnquire.release();
+				gotFailed = 1;
 			}
 			
 			
@@ -37,7 +38,9 @@ public class ClientsServerThreadListener extends Client {
 				
 				if(sentYieldMessageTo.containsKey(client_id)) {
 					sentYieldMessageTo.remove(client_id);
-					
+					if(sentYieldMessageTo.size() == 0) {
+						sentYield = 0;
+					}
 				}
 				
 				if(pendingRepliesToReceive.size() == 0) {
