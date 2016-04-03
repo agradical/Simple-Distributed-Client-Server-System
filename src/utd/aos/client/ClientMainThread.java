@@ -17,6 +17,7 @@ public class ClientMainThread extends Client {
 			
 			long starttime = System.currentTimeMillis();
 
+			inprocess = true;
 			getMutex();
 			//System.out.println("--WAIT allreply sema ( Main thread)--");			
 			//gotallReplies.acquire();
@@ -24,6 +25,7 @@ public class ClientMainThread extends Client {
 			//System.out.println("--WAIT release sema ( Main thread)--");			
 			//gotallReleases.acquire();
 
+			
 			while(pendingRepliesToReceive.size() != 0 || pendingReleaseToReceive != 0) {
 				/*
 					if(pendingReleaseToReceive != 0)
