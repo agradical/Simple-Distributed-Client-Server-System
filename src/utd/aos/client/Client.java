@@ -142,7 +142,7 @@ public class Client implements Runnable{
 				return_message.setId(id);
 				return_message.setType(MessageType.REPLY);
 
-				System.out.println("--SENT REPLY to "+socketHostname+"--");
+				System.out.println("-----SENT REPLY to "+socketHostname+"--");
 
 				socketMap.getO_out().writeObject(return_message);
 
@@ -158,7 +158,7 @@ public class Client implements Runnable{
 				return_message.setId(id);
 				return_message.setType(MessageType.FAILED);
 
-				System.out.println("--SENT FAILED "+socketHostname+"--");
+				System.out.println("-----SENT FAILED "+socketHostname+"--");
 
 				socketMap.getO_out().writeObject(return_message);
 				
@@ -169,7 +169,7 @@ public class Client implements Runnable{
 					return_message.setId(id);
 					return_message.setType(MessageType.ENQUIRE);
 
-					System.out.println("--SENT ENQUIRE  "+socketHostname+"--");
+					System.out.println("-----SENT ENQUIRE  "+socketHostname+"--");
 
 					InetSocketAddress addr = otherClients.get(pendingReleaseToReceive);
 					String client_hostname = addr.getHostName();
@@ -177,6 +177,8 @@ public class Client implements Runnable{
 
 					client_socket_map.getO_out().writeObject(return_message);
 					
+				} else {
+					request_fifo.add(client_id);
 				}
 			}
 		}
