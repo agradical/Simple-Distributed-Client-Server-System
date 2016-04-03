@@ -44,7 +44,7 @@ public class ClientsServerThreadListener extends Client {
 				record.yield++;
 				System.out.println("--RECV YIELD "+hostname);
 				
-				while(pendingReleaseToReceive != id) {
+				while(pendingReleaseToReceive == id) {
 					Thread.sleep(200);
 					System.out.println("WAIT in YIELD for Release");
 				} 
