@@ -177,7 +177,12 @@ public class Client implements Runnable{
 				
 				while(inprocess) {
 					//wait
-					Thread.sleep(50);
+					//Thread.sleep(50);
+					break;
+				}
+				
+				if(!inprocess){
+					break;
 				}
 				
 			} catch (Exception e) {
@@ -185,7 +190,7 @@ public class Client implements Runnable{
 				try{
 					shutdown();
 				} catch (Exception e1) {
-					
+					e1.printStackTrace();
 				}
 			}
 			
@@ -197,7 +202,7 @@ public class Client implements Runnable{
 		try {
 			shutdown();			
 		} catch (Exception e) {
-			
+			e.printStackTrace();
 		}
 	}
 
