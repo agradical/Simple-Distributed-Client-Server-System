@@ -71,7 +71,7 @@ public class Client implements Runnable{
 	public static int count = 1;
 	public static MessageRecord record = new MessageRecord();
 	
-	public static PriorityQueue<Request> request_q = new PriorityQueue<Request>();
+	public static PriorityQueue<Request> request_q;
 	
 	public Client() {
 	
@@ -205,6 +205,7 @@ public class Client implements Runnable{
 		System.out.println("----- "+req.getId()+" ------");
 		if(req.getId() == id) {
 			
+			inprocess = true;
 			new Thread(new ClientMainThread(operation)).start();
 
 		} else {
