@@ -45,7 +45,7 @@ public class ClientsServerThreadListener extends Client {
 				
 				if(pendingRepliesToReceive.size() == 0) {
 					
-					gotallReplies.release();
+					//gotallReplies.release();
 					System.out.println("--RELEASING allreply sema in listener--");
 				
 				}

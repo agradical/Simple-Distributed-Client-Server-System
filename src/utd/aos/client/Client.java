@@ -45,8 +45,8 @@ public class Client implements Runnable{
 	
 	public static Semaphore mutex = new Semaphore(1);	
 	
-	public static Semaphore gotallReplies = new Semaphore(1);
-	public static Semaphore gotallReleases = new Semaphore(1);
+	//public static Semaphore gotallReplies = new Semaphore(1);
+	//public static Semaphore gotallReleases = new Semaphore(1);
 	//public static Semaphore gotReplyofEnquire = new Semaphore(1);
 	
 	public static int pendingReleaseToReceive;
@@ -113,11 +113,11 @@ public class Client implements Runnable{
 						
 					} else {
 						System.out.println("--WAIT allreply sema (other request)--");
-						gotallReplies.acquire();
+						//gotallReplies.acquire();
 						serveOthersRequest(request_fifo.remove());
 						
 						System.out.println("--RELEASE allreply sema (other request)--");
-						gotallReplies.release();
+						//gotallReplies.release();
 					}
 				}				
 				
@@ -274,7 +274,7 @@ public class Client implements Runnable{
 		
 		
 		System.out.println("--WAIT allreply sema (mutex)--");
-		gotallReplies.acquire();
+		//gotallReplies.acquire();
 		
 		for(Map.Entry<String, SocketMap> entry: quorum.entrySet()) {
 			SocketMap quorum_client = entry.getValue();
