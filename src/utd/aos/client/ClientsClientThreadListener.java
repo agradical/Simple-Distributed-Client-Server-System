@@ -114,11 +114,12 @@ public class ClientsClientThreadListener extends Client {
 									return_message.setId(id);
 									return_message.setType(MessageType.ENQUIRE);
 
-									System.out.println("--SENT ENQUIRE  "+socketHostname+"--");
-
+									
 									InetSocketAddress addr = otherClients.get(pendingReleaseToReceive);
 									String client_hostname = addr.getHostName();
 									SocketMap client_socket_map = allClientsSockets.get(client_hostname);
+
+									System.out.println("--SENT ENQUIRE  "+client_hostname+"--");
 
 									client_socket_map.getO_out().writeObject(return_message);
 									
@@ -237,7 +238,7 @@ public class ClientsClientThreadListener extends Client {
 					return_message.setId(id);
 					return_message.setType(MessageType.GRANT);
 					
-					System.out.println("--SENT GRANT "+socketHostname+"--");
+					System.out.println("--SENT GRANT "+client_hostname+"--");
 					
 					client_socket_map.getO_out().writeObject(return_message);
 				
