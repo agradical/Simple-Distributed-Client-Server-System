@@ -16,11 +16,28 @@ public class ClientsServerThreadListener extends Client {
 	public void run() {
 		try {
 			ObjectInputStream o_in = socketmap.getO_in();
-			MutexMessage message = (MutexMessage)o_in.readObject();
+			
+			Object object = null;
+			try {
+				object = o_in.readObject();
+			} catch (Exception e) {
+				//Closing connection with other servers in case of termination from client
+				System.out.println("--Closing connection--");
+			}
+			
+			MutexMessage message = null;
+			if(object instanceof MutexMessage) {
+				message = (MutexMessage)object;
+			} else {
+				System.out.println("------------DOOMED----------"+ object.getClass());
+			}
+			
 			int client_id = message.getId();
 
+			
 			if(message.getType().equals(MessageType.FAILED)) {
-							
+				
+			
 				System.out.println("--RECV FAILED "+socketmap.getAddr().getHostName()+"-");
 				gotFailed = 1;
 			}
