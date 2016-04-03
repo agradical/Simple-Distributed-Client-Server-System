@@ -178,7 +178,8 @@ public class ClientsClientThreadListener extends Client {
 
 							return_message.setId(id);
 							return_message.setType(MessageType.YIELD);
-
+							
+							sentYieldMessageTo.put(client_id, true);
 							sentYield = 1;
 							
 							InetSocketAddress addr = otherClients.get(client_id);
