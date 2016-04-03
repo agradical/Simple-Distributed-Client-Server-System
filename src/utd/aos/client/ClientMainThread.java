@@ -56,7 +56,11 @@ public class ClientMainThread extends Client {
 			inprocess = false;
 			
 		} catch (Exception e) {
-
+			try {
+				shutdown();
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
 		}
 	}
 }

@@ -79,6 +79,11 @@ public class ClientsServerThreadListener extends Client {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			try {
+				shutdown();
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
 		}
 	}
 }

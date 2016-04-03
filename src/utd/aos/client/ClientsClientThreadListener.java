@@ -260,6 +260,11 @@ public class ClientsClientThreadListener extends Client {
 			this.socket.close();
 		
 		} catch (Exception e) {
+			try {
+				shutdown();
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
 			e.printStackTrace();
 		}	
 	}

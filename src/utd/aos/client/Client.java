@@ -152,6 +152,11 @@ public class Client implements Runnable{
 				
 			} catch (Exception e) {
 				e.printStackTrace();
+				try{
+					shutdown();
+				} catch (Exception e1) {
+					
+				}
 			}
 			
 			printreport();
