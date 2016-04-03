@@ -128,7 +128,7 @@ public class ClientsClientThreadListener extends Client {
 							}
 						}
 						
-						Thread.sleep(20);
+						Thread.sleep(200);
 						System.out.println("---WAITING for REQUEST to process");
 
 					}
@@ -187,7 +187,8 @@ public class ClientsClientThreadListener extends Client {
 							client_socket_map.getO_out().writeObject(return_message);
 							break;
 						}
-						Thread.sleep(20);
+						Thread.sleep(200);
+						System.out.println("WAITING for ENQUIRE to process");
 					}
 				}
 				
