@@ -20,28 +20,30 @@ public class ClientsServerThreadListener extends Client {
 			int client_id = message.getId();
 
 			if(message.getType().equals(MessageType.FAILED)) {
+				
 				gotFailedMessageFrom.put(client_id, true);
 				pendingReplyofEnquire = 0;
-				
-				System.out.println("--Got failed from "+client_id+"-");
+			
+				System.out.println("--RECV FAILED "+client_id+"-");
 				//gotReplyofEnquire.release();
 			}
 			
 			
 			if(message.getType().equals(MessageType.REPLY) && pendingRepliesToReceive.containsKey(client_id)) {
 				
-				System.out.println("--got reply from "+socketmap.getAddr().getHostName()+"--");
+				System.out.println("--RECV REPLY "+socketmap.getAddr().getHostName()+"--");
 				
 				pendingRepliesToReceive.remove(client_id);
 				
 				if(sentYieldMessageTo.containsKey(client_id)) {
 					sentYieldMessageTo.remove(client_id);
+					
 				}
 				
 				if(pendingRepliesToReceive.size() == 0) {
 					
 					gotallReplies.release();
-					System.out.println("--releasing allreply mutex--");
+					System.out.println("--RELEASING allreply sema in listener--");
 				
 				}
 			}

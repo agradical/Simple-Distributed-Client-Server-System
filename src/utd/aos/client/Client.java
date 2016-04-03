@@ -58,7 +58,8 @@ public class Client implements Runnable{
 	
 	//public static Queue<Integer> pq_fifo = new PriorityQueue<Integer>();
 	public static Queue<Integer> request_fifo = new LinkedList<Integer>(); 
-	
+	public static Queue<Integer> enquire_fifo = new LinkedList<Integer>(); 
+
 	public State state = State.AVAILABLE;
 	public enum State {
 		AVAILABLE, BLOCKED 
@@ -109,7 +110,7 @@ public class Client implements Runnable{
 						new ClientMainThread(operation).run();//).start();
 						
 					} else {
-						System.out.println("--waiting for replies semaphore in other request--");
+						System.out.println("--WAIT allreply sema (other request)--");
 						gotallReplies.acquire();
 						serveOthersRequest(request_fifo.remove());
 						gotallReplies.release();
@@ -140,8 +141,7 @@ public class Client implements Runnable{
 				return_message.setId(id);
 				return_message.setType(MessageType.REPLY);
 
-				System.out.println("--REPLY to "+socketHostname+"--");
-				System.out.println("---waiting for release message from id "+ client_id+"--");
+				System.out.println("--SENT REPLY "+socketHostname+"--");
 
 				socketMap.getO_out().writeObject(return_message);
 				
@@ -152,8 +152,7 @@ public class Client implements Runnable{
 				return_message.setId(id);
 				return_message.setType(MessageType.REPLY);
 
-				System.out.println("--REPLY to "+socketHostname+"--");
-				System.out.println("--waiting for release message from id "+ client_id+"--");
+				System.out.println("--SENT REPLY to "+socketHostname+"--");
 
 				socketMap.getO_out().writeObject(return_message);
 				
@@ -168,33 +167,28 @@ public class Client implements Runnable{
 				return_message.setId(id);
 				return_message.setType(MessageType.FAILED);
 
-				System.out.println("--FAILED SENT to "+socketHostname+"--");
+				System.out.println("--SENT FAILED to "+socketHostname+"--");
 				socketMap.getO_out().writeObject(return_message);
 
 			} else {
 				
 				//System.out.println("--wait for enquire sema(request)-");
-				//gotReplyofEnquire.acquire();
-				if(pendingReplyofEnquire != 0) {
 				
-					request_fifo.add(client_id);
-				
-				} else {
-					
-					pendingReplyofEnquire = pendingReleaseToReceive;
 
-					return_message.setId(id);
-					return_message.setType(MessageType.ENQUIRE);
+				pendingReplyofEnquire = pendingReleaseToReceive;
 
-					System.out.println("--ENQUIRE SENT to "+socketHostname+"--");
+				return_message.setId(id);
+				return_message.setType(MessageType.ENQUIRE);
 
-					InetSocketAddress addr = otherClients.get(pendingReleaseToReceive);
-					String client_hostname = addr.getHostName();
-					SocketMap client_socket_map = allClientsSockets.get(client_hostname);
+				System.out.println("--SENT ENQUIRE "+socketHostname+"--");
 
-					client_socket_map.getO_out().writeObject(return_message);
-				
-				}
+				InetSocketAddress addr = otherClients.get(pendingReleaseToReceive);
+				String client_hostname = addr.getHostName();
+				SocketMap client_socket_map = allClientsSockets.get(client_hostname);
+
+				client_socket_map.getO_out().writeObject(return_message);
+
+
 			}
 		}
 	}

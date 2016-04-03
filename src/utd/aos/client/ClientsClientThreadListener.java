@@ -69,13 +69,12 @@ public class ClientsClientThreadListener extends Client {
 						
 					
 					if(pendingReleaseToReceive == 0 ) {
-												
-						System.out.println("--wait for release sema(request)-");
-						
+																		
 						if(pendingRepliesToReceive.size() == 0) {
 							
 							pendingReleaseToReceive = client_id;
-
+							gotallReleases.acquire();
+							
 							return_message.setId(id);
 							return_message.setType(MessageType.REPLY);
 
@@ -88,6 +87,7 @@ public class ClientsClientThreadListener extends Client {
 						} else if (pendingRepliesToReceive.size() != 0) {
 							
 							pendingReleaseToReceive = client_id;
+							gotallReleases.acquire();
 
 							return_message.setId(id);
 							return_message.setType(MessageType.REPLY);
@@ -106,10 +106,12 @@ public class ClientsClientThreadListener extends Client {
 						//lower id = high priority
 						if(pendingReleaseToReceive < client_id) {
 
+							request_fifo.add(client_id);
+							
 							return_message.setId(id);
 							return_message.setType(MessageType.FAILED);
 
-							System.out.println("--FAILED SENT to "+socketHostname+"--");
+							System.out.println("--SENT FAILED "+socketHostname+"--");
 
 							o_out.writeObject(return_message);
 
@@ -117,26 +119,21 @@ public class ClientsClientThreadListener extends Client {
 							
 							//System.out.println("--wait for enquire sema(request)-");
 							//gotReplyofEnquire.acquire();
-							if(pendingReplyofEnquire != 0) {
-							
-								request_fifo.add(client_id);
-							
-							} else {
-								
-								pendingReplyofEnquire = pendingReleaseToReceive;
 
-								return_message.setId(id);
-								return_message.setType(MessageType.ENQUIRE);
+							pendingReplyofEnquire = pendingReleaseToReceive;
 
-								System.out.println("--ENQUIRE SENT to "+socketHostname+"--");
+							return_message.setId(id);
+							return_message.setType(MessageType.ENQUIRE);
 
-								InetSocketAddress addr = otherClients.get(pendingReleaseToReceive);
-								String client_hostname = addr.getHostName();
-								SocketMap client_socket_map = allClientsSockets.get(client_hostname);
+							System.out.println("--SENT ENQUIRE  "+socketHostname+"--");
 
-								client_socket_map.getO_out().writeObject(return_message);
-							
-							}
+							InetSocketAddress addr = otherClients.get(pendingReleaseToReceive);
+							String client_hostname = addr.getHostName();
+							SocketMap client_socket_map = allClientsSockets.get(client_hostname);
+
+							client_socket_map.getO_out().writeObject(return_message);
+
+
 						}
 					}
 				}
@@ -144,11 +141,11 @@ public class ClientsClientThreadListener extends Client {
 				if(message.getType().equals(MessageType.RELEASE)) {
 										
 					if(pendingReleaseToReceive == client_id) {
-						System.out.println("---release message from id "+ client_id+" received--");
+						System.out.println("---RECV RELEASE  "+ client_id+" received--");
 
 						pendingReleaseToReceive = 0;
 						
-						System.out.println("--release release sema(release)-");
+						System.out.println("--Releasing release sema(release)-");
 						gotallReleases.release();
 					
 					}
@@ -175,7 +172,7 @@ public class ClientsClientThreadListener extends Client {
 						
 						sentYieldMessageTo.put(client_id, true);
 						
-						System.out.println("--YIELD SENT to "+socketHostname+"--");
+						System.out.println("--SENT YIELD "+socketHostname+"--");
 
 						o_out.writeObject(return_message);
 					
@@ -188,7 +185,7 @@ public class ClientsClientThreadListener extends Client {
 						String client_hostname = addr.getHostName();
 						SocketMap client_socket_map = allClientsSockets.get(client_hostname);
 						
-						System.out.println("--YIELD SENT to "+client_hostname+"--");
+						System.out.println("--SENT YIELD "+client_hostname+"--");
 												
 						client_socket_map.getO_out().writeObject(return_message);
 					
@@ -230,7 +227,7 @@ public class ClientsClientThreadListener extends Client {
 					return_message.setId(id);
 					return_message.setType(MessageType.REPLY);
 					
-					System.out.println("--GRANT SENT to "+socketHostname+"--");
+					System.out.println("--SENT GRANT "+socketHostname+"--");
 					
 					client_socket_map.getO_out().writeObject(return_message);
 				
