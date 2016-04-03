@@ -561,6 +561,10 @@ public class Client implements Runnable{
 					
 					System.out.println("Connect success: "+ip.getHostName()+"->"+addr.getHostName());
 
+					if(request_q == null) {
+						request_q = new PriorityQueue<Request>(30, new RequestComparator());
+					}
+					
 					break;
 			    
 			    } catch(ConnectException e) {
@@ -578,8 +582,6 @@ public class Client implements Runnable{
 				} 
 			}
 		}
-		
-		request_q = new PriorityQueue<Request>(30, new RequestComparator());
 
 	}
 	
