@@ -102,24 +102,29 @@ public class Client implements Runnable{
 
 				
 				System.out.println("--adding my request to fifo--");			
-				request_fifo.add(id);
+				
 				
 				
 				while(pendingReleaseToReceive != 0) {
 					Thread.sleep(20);
 				} 
+				
+				request_fifo.add(id);
+				
 				//int size = request_fifo.size();
-				while(!request_fifo.isEmpty() && inprocess == false) {
+				while(!request_fifo.isEmpty()) {
+
+					
 					int top = request_fifo.remove();
 					if(top == id) {
-						
+
 						new Thread(new ClientMainThread(operation)).start();//).start();
-						
+
 					} else {
 						//System.out.println("--WAIT allreply sema (other request)--");
 						//gotallReplies.acquire();
 						serveOthersRequest(top);
-						
+
 						if(pendingReleaseToReceive == 0) {
 							if(fail_fifo.size() != 0) {
 								serveOthersRequest(fail_fifo.remove());
@@ -128,7 +133,25 @@ public class Client implements Runnable{
 						//System.out.println("--RELEASE allreply sema (other request)--");
 						//gotallReplies.release();
 					}
-					Thread.sleep(20);
+
+					
+					while(!request_fifo.isEmpty() || inprocess == true) {
+
+						if (!request_fifo.isEmpty()) {
+
+							serveOthersRequest(request_fifo.remove());
+
+							if(pendingReleaseToReceive == 0) {
+								if(fail_fifo.size() != 0) {
+									Thread.sleep(20);
+									serveOthersRequest(fail_fifo.remove());
+								}
+							}				
+						}
+						Thread.sleep(20);
+					}
+					
+					
 					//size--;
 				}				
 				
