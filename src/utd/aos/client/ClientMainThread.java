@@ -31,7 +31,7 @@ public class ClientMainThread extends Client {
 					else
 						System.out.println("---WAITING for all REPLIES");
 				 */
-				Thread.sleep(20);
+				Thread.sleep(2);
 
 			}
 
