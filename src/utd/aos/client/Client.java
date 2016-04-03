@@ -115,7 +115,7 @@ public class Client implements Runnable{
 						
 						if(pendingReleaseToReceive == 0) {
 							if(fail_fifo.size() != 0) {
-								serveOthersRequest(top);
+								serveOthersRequest(fail_fifo.remove());
 							}
 						}
 						//System.out.println("--RELEASE allreply sema (other request)--");

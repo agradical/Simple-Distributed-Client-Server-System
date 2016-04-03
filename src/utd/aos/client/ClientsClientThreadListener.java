@@ -129,7 +129,8 @@ public class ClientsClientThreadListener extends Client {
 						}
 						
 						Thread.sleep(20);
-					
+						System.out.println("---WAITING for REQUEST to process");
+
 					}
 					
 				}

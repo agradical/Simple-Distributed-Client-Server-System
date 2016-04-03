@@ -21,7 +21,8 @@ public class ClientMainThread extends Client {
 				//gotallReleases.acquire();
 
 				while(pendingRepliesToReceive.size() != 0) {
-					Thread.sleep(20);
+					Thread.sleep(200);
+					System.out.println("---WAITING for all REPLIES");
 				}
 				
 				pendingReleaseToReceive = id;
