@@ -162,9 +162,23 @@ public class ClientsClientThreadListener extends Client {
 					record.enquire++;
 					System.out.println("RECV ENQUIRE "+socketHostname);
 					
-					while(gotFailed != 1 && sentYield != 1) {
+					while(gotFailed != 1 && sentYield != 1 && pendingReleaseToReceive != 0) {
 						Thread.sleep(20);
 						System.out.println("WAITING for ENQUIRE to process");
+					}
+					
+					if(pendingReleaseToReceive == 0) {
+						
+						pendingReleaseToReceive = client_id;
+
+						return_message.setId(id);
+						return_message.setType(MessageType.REPLY);
+						
+						System.out.println("--SENT REPLY "+socketHostname+"--");
+
+						o_out.writeObject(return_message);
+						
+						record.reply++;
 					}
 					
 					if(gotFailed == 1) {
