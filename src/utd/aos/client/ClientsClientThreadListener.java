@@ -52,7 +52,11 @@ public class ClientsClientThreadListener extends Client {
 				}
 				
 				MutexMessage message = null;
-				message = (MutexMessage)object;
+				if(object instanceof MutexMessage) {
+					message = (MutexMessage)object;
+				} else {
+					System.out.println("------------DOOMED----------");
+				}
 				MutexMessage return_message = new MutexMessage();
 				int client_id = message.getId();
 

@@ -207,6 +207,7 @@ public class Client implements Runnable{
 					System.out.println("--Saving streams--");
 					
 					MutexMessage testmessage = new MutexMessage();
+					testmessage.setId(id);
 					testmessage.setType(MessageType.TEST);
 					o_out.writeObject(testmessage);
 					//System.out.println("--checkpoint0--");
