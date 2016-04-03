@@ -78,18 +78,15 @@ public class Client implements Runnable{
 	public void run() {
 		// TODO Auto-generated method stub
 		init();
-		System.out.println("-----here----");
 		Random rand = new Random();
 		
 		while(count <= 40) {
-			System.out.println("-----here1----");
 
 			Integer delay = rand.nextInt(40);
 			
 			delay += 10;
 			
 			reset();
-			System.out.println("-----here2----");
 
 			try {
 				Thread.sleep(delay);
@@ -112,7 +109,7 @@ public class Client implements Runnable{
 					Thread.sleep(20);
 				} 
 				//int size = request_fifo.size();
-				while(!request_fifo.isEmpty()) {
+				while(!request_fifo.isEmpty() && inprocess == false) {
 					int top = request_fifo.remove();
 					if(top == id) {
 						
