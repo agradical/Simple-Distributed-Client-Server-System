@@ -53,7 +53,7 @@ public class Client implements Runnable{
 	public static int sentYield;
 	
 	public static Map<Integer, Boolean> pendingRepliesToReceive = new HashMap<Integer, Boolean>();
-	public static Map<Integer, Boolean> gotFailedMessageFrom = new HashMap<Integer, Boolean>();
+	//public static Map<Integer, Boolean> gotFailedMessageFrom = new HashMap<Integer, Boolean>();
 	public static Map<Integer, Boolean> sentYieldMessageTo = new HashMap<Integer, Boolean>();
 	
 	public static Queue<Integer> request_fifo = new LinkedList<Integer>(); 

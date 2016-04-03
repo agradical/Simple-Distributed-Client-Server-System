@@ -168,6 +168,7 @@ public class ClientsClientThreadListener extends Client {
 
 							sentYieldMessageTo.put(client_id, true);
 
+							sentYield = 1;
 							System.out.println("--SENT YIELD "+socketHostname+"--");
 
 							o_out.writeObject(return_message);
@@ -178,6 +179,8 @@ public class ClientsClientThreadListener extends Client {
 							return_message.setId(id);
 							return_message.setType(MessageType.YIELD);
 
+							sentYield = 1;
+							
 							InetSocketAddress addr = otherClients.get(client_id);
 							String client_hostname = addr.getHostName();
 							SocketMap client_socket_map = allClientsSockets.get(client_hostname);
@@ -193,10 +196,14 @@ public class ClientsClientThreadListener extends Client {
 				}
 				
 				if(message.getType().equals(MessageType.YIELD)) {	
+										
 					
-					sentYield = 1;
+					while(pendingReleaseToReceive != 0) {
+						Thread.sleep(200);
+						System.out.println("WAIT in YIELD for Release");
+					} 
 					
-					request_fifo.add(client_id);
+					//request_fifo.add(client_id);
 					
 					Iterator<Integer> iterator = request_fifo.iterator();
 					int min_id_queued = 100;
@@ -214,13 +221,14 @@ public class ClientsClientThreadListener extends Client {
 						}
 					}
 					
-					
+					if(min_id_queued == 100 || min_id_queued > client_id) {
+						min_id_queued = client_id;
+					}
+
+					pendingReleaseToReceive = min_id_queued;
 					
 					InetSocketAddress addr = otherClients.get(min_id_queued);
 					
-					if(pendingReleaseToReceive == 0) {
-						pendingReleaseToReceive = min_id_queued;
-					}
 					
 					String client_hostname = addr.getHostName();
 					SocketMap client_socket_map = allClientsSockets.get(client_hostname);

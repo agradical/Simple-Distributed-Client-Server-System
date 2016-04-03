@@ -20,9 +20,7 @@ public class ClientsServerThreadListener extends Client {
 			int client_id = message.getId();
 
 			if(message.getType().equals(MessageType.FAILED)) {
-				
-				gotFailedMessageFrom.put(client_id, true);
-			
+							
 				System.out.println("--RECV FAILED "+socketmap.getAddr().getHostName()+"-");
 				gotFailed = 1;
 			}
