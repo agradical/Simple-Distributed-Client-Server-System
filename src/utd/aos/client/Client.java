@@ -87,17 +87,19 @@ public class Client implements Runnable{
 	public void run() {
 		// TODO Auto-generated method stub
 		init();
-		
+		System.out.println("-----here----");
 		Random rand = new Random();
 		
 		while(count <= 40) {
-			
+			System.out.println("-----here1----");
+
 			Integer delay = rand.nextInt(40);
 			
 			delay += 10;
 			
 			reset();
-			
+			System.out.println("-----here2----");
+
 			try {
 				Thread.sleep(delay);
 
@@ -336,6 +338,8 @@ public class Client implements Runnable{
 		record.request = 0;
 		record.yield = 0;
 		record.grant = 0;
+		record.time = 0;
+		
 		/*
 		pendingReleaseToReceive = 0;
 		gotFailed = 0;
