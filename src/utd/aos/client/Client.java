@@ -145,13 +145,13 @@ public class Client implements Runnable{
 					
 					//size--;
 				}				
-				*/
+				 */
 				Request request = new Request(id, null, MessageType.REQUEST);
 				request_q.add(request);
 				while(!request_q.isEmpty()) {
-					
+
 					Request req = request_q.remove();
-					
+
 					if(req.getType().equals(MessageType.REQUEST)) {
 						handleRequest(req, operation);
 					}
@@ -173,14 +173,14 @@ public class Client implements Runnable{
 					else if(req.getType().equals(MessageType.GRANT)) {
 						handleGrant(req);
 					}
-					
+
 					if(!inprocess){
 						break;
 					}
-					
+
 				}
-				
-				
+
+
 				
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -207,11 +207,14 @@ public class Client implements Runnable{
 		System.out.println("----- "+req.getId()+" ------");
 		if(req.getId() == id) {
 			
-			inprocess = true;
-			new Thread(new ClientMainThread(operation)).start();
-
-		} else {
+			if(pendingReleaseToReceive == 0) {
+				inprocess = true;
+				new Thread(new ClientMainThread(operation)).start();
+			} else {
+				request_q.add(req);
+			}
 			
+		} else {	
 			
 			SocketMap socketmap = req.getSocketmap();
 			String socketHostname = socketmap.getAddr().getHostName();
