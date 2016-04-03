@@ -167,7 +167,9 @@ public class Client implements Runnable{
 	public void printreport(){
 		File file = new File("record_"+id);
 		try {
-			file.createNewFile();
+			if(!file.exists()) {
+				file.createNewFile();
+			}
 			FileWriter fw = new FileWriter(file);
 			
 			int total_message = record.request + record.reply + record.release + record.fail + record.enquire + record.yield + record.grant;

@@ -160,7 +160,7 @@ public class ClientsClientThreadListener extends Client {
 					}*/
 					
 					record.enquire++;
-					System.out.println("RECV ENQUIRE "+socketHostname);
+					System.out.println("--RECV ENQUIRE "+socketHostname);
 					
 					while(gotFailed != 1 && sentYield != 1 && pendingReleaseToReceive != 0) {
 						Thread.sleep(20);
@@ -179,6 +179,7 @@ public class ClientsClientThreadListener extends Client {
 						o_out.writeObject(return_message);
 						
 						record.reply++;
+						
 					}
 					
 					if(gotFailed == 1) {
@@ -195,7 +196,6 @@ public class ClientsClientThreadListener extends Client {
 
 						record.yield++;
 
-						break;
 
 					} else if (sentYield == 1) {
 
@@ -205,17 +205,12 @@ public class ClientsClientThreadListener extends Client {
 						sentYieldMessageTo.put(client_id, true);
 						sentYield = 1;
 
-						InetSocketAddress addr = otherClients.get(client_id);
-						String client_hostname = addr.getHostName();
-						SocketMap client_socket_map = allClientsSockets.get(client_hostname);
+						System.out.println("--SENT YIELD "+socketHostname+"--");
 
-						System.out.println("--SENT YIELD "+client_hostname+"--");
-
-						client_socket_map.getO_out().writeObject(return_message);
+						o_out.writeObject(return_message);
 
 						record.yield++;
 
-						break;
 					}
 					
 				}

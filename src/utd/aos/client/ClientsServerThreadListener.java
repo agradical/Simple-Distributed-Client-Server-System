@@ -70,6 +70,11 @@ public class ClientsServerThreadListener extends Client {
 						sentYield = 0;
 					}
 				}
+				
+				if(pendingRepliesToReceive.containsKey(client_id)) {
+					pendingRepliesToReceive.remove(client_id);
+				}
+				
 				if(pendingReleaseToReceive == client_id)  {
 					pendingReleaseToReceive = 0;
 				}
