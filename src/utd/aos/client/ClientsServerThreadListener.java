@@ -37,10 +37,11 @@ public class ClientsServerThreadListener extends Client {
 
 			
 			if(message.getType().equals(MessageType.FAILED)) {
-				
 			
 				System.out.println("--RECV FAILED "+socketmap.getAddr().getHostName()+"-");
 				gotFailed = 1;
+				
+				record.fail++;
 			}
 			
 			
@@ -56,6 +57,7 @@ public class ClientsServerThreadListener extends Client {
 					System.out.println("--RELEASING allreply sema in listener--");
 				
 				}
+				record.reply++;
 			}
 			
 			if(message.getType().equals(MessageType.GRANT)) {
@@ -71,6 +73,7 @@ public class ClientsServerThreadListener extends Client {
 				if(pendingReleaseToReceive == client_id)  {
 					pendingReleaseToReceive = 0;
 				}
+				record.grant++;
 			}
 			
 		} catch (Exception e) {

@@ -24,6 +24,8 @@ public class ServerCore implements Server {
 	public static Integer port;
 	public static Map<String, Resource> activeResourceMap = new HashMap<String, Resource>();
 
+	public static int client_num = 0;
+	
 	private Socket socket;
 	
 	public static String DATADIRECTORY = "data";
@@ -105,6 +107,20 @@ public class ServerCore implements Server {
 				//In case of Termination from client close connections with other servers
 				//Line added for graceful termination
 				if(operation.getOperation().equals(OperationMethod.TERMINATE)) {
+
+					while(client_num != 0) {
+						try {
+							Thread.sleep(200);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+					
+					Message m = new Message();
+					m.setMesssage("Terminate");
+					o_out.writeObject(m);
+
 					in.close();
 					if(!sockets.isEmpty()) {
 						for (Map.Entry<InetAddress, SocketMap> entry : sockets.entrySet()) {

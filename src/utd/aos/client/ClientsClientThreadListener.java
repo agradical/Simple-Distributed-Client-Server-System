@@ -71,7 +71,9 @@ public class ClientsClientThreadListener extends Client {
 					} else {
 						gotallReleases.acquire();
 					}*/
-						
+					
+					record.request++;
+					
 					System.out.println("--RECV REQUEST "+socketHostname+"--");
 
 
@@ -85,7 +87,8 @@ public class ClientsClientThreadListener extends Client {
 						System.out.println("--SENT REPLY to "+socketHostname+"--");
 
 						o_out.writeObject(return_message);
-
+						
+						record.reply++;
 
 					} else {
 
@@ -100,7 +103,8 @@ public class ClientsClientThreadListener extends Client {
 							System.out.println("--SENT FAILED "+socketHostname+"--");
 
 							o_out.writeObject(return_message);
-
+							
+							record.fail++;
 
 						} else {
 
@@ -118,6 +122,8 @@ public class ClientsClientThreadListener extends Client {
 
 								client_socket_map.getO_out().writeObject(return_message);
 
+								record.enquire++;
+								
 							} else {
 								
 								request_fifo.add(client_id);
@@ -137,7 +143,7 @@ public class ClientsClientThreadListener extends Client {
 						
 						System.out.println("--Releasing release sema(release)-");
 						//gotallReleases.release();
-					
+						record.release++;
 					}
 				}
 				
@@ -154,6 +160,9 @@ public class ClientsClientThreadListener extends Client {
 						gotReplyofEnquire.release();
 					
 					}*/
+					
+					record.enquire++;
+					
 					while(gotFailed == 1 || sentYield == 1) {
 						if(gotFailed == 1) {
 
@@ -166,6 +175,9 @@ public class ClientsClientThreadListener extends Client {
 							System.out.println("--SENT YIELD "+socketHostname+"--");
 
 							o_out.writeObject(return_message);
+							
+							record.yield++;
+							
 							break;
 
 						} else if (sentYield == 1) {
@@ -183,6 +195,9 @@ public class ClientsClientThreadListener extends Client {
 							System.out.println("--SENT YIELD "+client_hostname+"--");
 
 							client_socket_map.getO_out().writeObject(return_message);
+							
+							record.yield++;
+							
 							break;
 						}
 						Thread.sleep(200);
@@ -192,6 +207,7 @@ public class ClientsClientThreadListener extends Client {
 				
 				if(message.getType().equals(MessageType.YIELD)) {	
 										
+					record.yield++;
 					
 					while(pendingReleaseToReceive != 0) {
 						Thread.sleep(200);
@@ -234,7 +250,8 @@ public class ClientsClientThreadListener extends Client {
 					System.out.println("--SENT GRANT "+client_hostname+"--");
 					
 					client_socket_map.getO_out().writeObject(return_message);
-				
+					
+					record.grant++;
 				}
 			}
 			

@@ -3,6 +3,7 @@ package utd.aos.client;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -55,19 +56,27 @@ public class Client implements Runnable{
 	public static boolean inprocess = false;
 	
 	public static Map<Integer, Boolean> pendingRepliesToReceive = new HashMap<Integer, Boolean>();
-	//public static Map<Integer, Boolean> gotFailedMessageFrom = new HashMap<Integer, Boolean>();
 	public static Map<Integer, Boolean> sentYieldMessageTo = new HashMap<Integer, Boolean>();
 	
 	public static Queue<Integer> request_fifo = new LinkedList<Integer>(); 
 	public static Queue<Integer> fail_fifo = new LinkedList<Integer>(); 
 
-	public State state = State.AVAILABLE;
-	public enum State {
-		AVAILABLE, BLOCKED 
+	public static int count = 1;
+	public static MessageRecord record;
+	
+	public class MessageRecord {
+		public int request;
+		public int reply;
+		public int release;
+		public int fail;
+		public int enquire;
+		public int yield;
+		public int grant;
+		public long time;
 	}
 	
 	public Client() {
-		
+	
 	}
 
 	//MutexAlgorithm algo;
@@ -78,11 +87,11 @@ public class Client implements Runnable{
 	public void run() {
 		// TODO Auto-generated method stub
 		init();
-		int count = 1;
+		
 		while(count <= 40) {
 			Random rand = new Random();
-			Integer delay = rand.nextInt(400);
-			delay += 100;
+			Integer delay = rand.nextInt(40);
+			delay += 10;
 			
 			reset();
 			
@@ -126,7 +135,7 @@ public class Client implements Runnable{
 						//System.out.println("--RELEASE allreply sema (other request)--");
 						//gotallReplies.release();
 					}
-					Thread.sleep(200);
+					Thread.sleep(20);
 					//size--;
 				}				
 				
@@ -134,10 +143,46 @@ public class Client implements Runnable{
 				e.printStackTrace();
 			}
 			count++;
+			
+			printreport();
 		}
-		shutdown();			
+		
+		try {
+			shutdown();			
+		} catch (Exception e) {
+			
+		}
 	}
 
+	public void printreport(){
+		File file = new File("record_"+id);
+		try {
+			file.createNewFile();
+			FileWriter fw = new FileWriter(file);
+			
+			int total_message = record.request + record.reply + record.release + record.fail + record.enquire + record.yield + record.grant;
+			
+			String report = "For Request: "+count+"\n";
+			report += "TIME: "+record.time+" milis\n";
+			report += "TOTALMESSAGES:"+total_message+"\n";
+			report += "REQUEST: "+record.request+"\n";
+			report += "REPLY: "+record.reply+"\n";
+			report += "RELEASE: "+record.release+"\n";
+			report += "FAIL: "+record.fail+"\n";
+			report += "ENQUIRE: "+record.enquire+"\n";
+			report += "YIELD: "+record.yield+"\n";
+			report += "GRANT: "+record.grant+"\n";
+			
+			report += "---------------\n";
+			
+			fw.write(report);
+			fw.close();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public void serveOthersRequest(int client_id) throws InterruptedException, IOException {
 		InetSocketAddress host = otherClients.get(client_id);
 		String socketHostname = host.getHostName();
@@ -156,7 +201,8 @@ public class Client implements Runnable{
 			System.out.println("-----SENT REPLY to "+socketHostname+"--");
 
 			socketMap.getO_out().writeObject(return_message);
-
+			
+			record.reply++;
 
 
 		} else {
@@ -173,6 +219,8 @@ public class Client implements Runnable{
 
 				socketMap.getO_out().writeObject(return_message);
 				
+				record.fail++;
+				
 			} else {
 
 				if(pendingReleaseToReceive != id) {
@@ -187,6 +235,8 @@ public class Client implements Runnable{
 					SocketMap client_socket_map = allClientsSockets.get(client_hostname);
 
 					client_socket_map.getO_out().writeObject(return_message);
+					
+					record.enquire++;
 					
 				} else {
 					request_fifo.add(client_id);
@@ -215,15 +265,13 @@ public class Client implements Runnable{
 					testmessage.setId(id);
 					testmessage.setType(MessageType.TEST);
 					o_out.writeObject(testmessage);
-					//System.out.println("--checkpoint0--");
+
 					SocketMap socketmap = new SocketMap(socket, o_out, o_in, addr);
 					
 					if(quorum.containsKey(addr.getHostName())) {
 
 						quorum.put(addr.getHostName(), socketmap);
-						//System.out.println("--checkpoint1--");
 					}
-					//System.out.println("--checkpoint2--");
 					if(allClientsSockets == null) {
 						allClientsSockets = new HashMap<String, SocketMap>();
 						allClientsSockets.put(addr.getHostName(), socketmap);
@@ -253,11 +301,38 @@ public class Client implements Runnable{
 
 	}
 	
-	public void shutdown() {
+	public void shutdown() throws IOException, ClassNotFoundException {
+		Operations operation = new Operations();
+		operation.setOperation(OperationMethod.TERMINATE);
+		serverSocketMap.getO_out().writeObject(operation);
+		serverSocketMap.getO_in().readObject();
 		
+		if(!allClientsListenerSockets.isEmpty()) {
+			for (Map.Entry<String, SocketMap> entry : allClientsListenerSockets.entrySet()) {
+				if(!entry.getValue().getSocket().isClosed()) {
+					entry.getValue().getO_out().close();
+				}
+			}
+		}
+		
+		if(!allClientsSockets.isEmpty()) {
+			for (Map.Entry<String, SocketMap> entry : allClientsSockets.entrySet()) {
+				if(!entry.getValue().getSocket().isClosed()) {
+					entry.getValue().getO_out().close();
+				}
+			}
+		}
 	}
+	
 	public void reset() {
 		
+		record.enquire = 0;
+		record.fail = 0;
+		record.release = 0;
+		record.reply = 0;
+		record.request = 0;
+		record.yield = 0;
+		record.grant = 0;
 		/*
 		pendingReleaseToReceive = 0;
 		gotFailed = 0;
@@ -302,6 +377,7 @@ public class Client implements Runnable{
 			MutexMessage message = new MutexMessage(id, MessageType.RELEASE);
 			quorum_client.getO_out().writeObject(message);
 		}
+		record.release += quorum.size();
 	}
 	
 	public Message request(Operations operation) throws IOException, ClassNotFoundException {	
