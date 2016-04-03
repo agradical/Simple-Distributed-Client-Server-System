@@ -166,7 +166,7 @@ public class ClientsClientThreadListener extends Client {
 					
 					while(gotFailed != 1 && sentYield != 1 && pendingReleaseToReceive != 0 && sentEnquire != 1) {
 						Thread.sleep(20);
-						System.out.println("WAITING for ENQUIRE to process");
+						System.out.println("WAITING for ENQUIRE "+socketHostname+"to process");
 					}
 					
 					if(pendingReleaseToReceive == 0) {
