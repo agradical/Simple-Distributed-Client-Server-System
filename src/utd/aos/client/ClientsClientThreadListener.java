@@ -67,41 +67,19 @@ public class ClientsClientThreadListener extends Client {
 						gotallReleases.acquire();
 					}*/
 						
-					
+					System.out.println("--RECV REQUEST "+socketHostname+"--");
 					if(pendingReleaseToReceive == 0 ) {
-																		
-						if(pendingRepliesToReceive.size() == 0) {
-							
-							pendingReleaseToReceive = client_id;
-							gotallReleases.acquire();
-							
-							return_message.setId(id);
-							return_message.setType(MessageType.REPLY);
 
-							System.out.println("--got request message from "+socketHostname+"--");
-							System.out.println("--REPLY to "+socketHostname+"--");
-							System.out.println("---waiting for release message from id "+ client_id+"--");
+						pendingReleaseToReceive = client_id;
 
-							o_out.writeObject(return_message);
-							
-						} else if (pendingRepliesToReceive.size() != 0) {
-							
-							pendingReleaseToReceive = client_id;
-							gotallReleases.acquire();
+						return_message.setId(id);
+						return_message.setType(MessageType.REPLY);
 
-							return_message.setId(id);
-							return_message.setType(MessageType.REPLY);
+						System.out.println("--SENT REPLY to "+socketHostname+"--");
 
-							System.out.println("--got concurrent request message from "+socketHostname+"--");
-							System.out.println("--REPLY to "+socketHostname+"--");
-							System.out.println("--waiting for release message from id "+ client_id+"--");
+						o_out.writeObject(return_message);
 
-							o_out.writeObject(return_message);
-							
-						}
-						
-
-					} else if (pendingReleaseToReceive != 0) {
+					} else {
 						
 						//lower id = high priority
 						if(pendingReleaseToReceive < client_id) {
