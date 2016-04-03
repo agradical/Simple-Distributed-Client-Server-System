@@ -202,12 +202,13 @@ public class Client implements Runnable{
 	}
 
 	public void handleRequest(Request req, Operations operation) throws IOException, InterruptedException, ClassNotFoundException {		
-		
+		System.out.println("----- "+req.getId()+" ------");
 		if(req.getId() == id) {
 			
 			new Thread(new ClientMainThread(operation)).start();
 
 		} else {
+			
 			
 			SocketMap socketmap = req.getSocketmap();
 			String socketHostname = socketmap.getAddr().getHostName();
