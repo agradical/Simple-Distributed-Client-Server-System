@@ -68,54 +68,67 @@ public class ClientsClientThreadListener extends Client {
 					}*/
 						
 					System.out.println("--RECV REQUEST "+socketHostname+"--");
-					if(pendingReleaseToReceive == 0 ) {
-
-						pendingReleaseToReceive = client_id;
-
-						return_message.setId(id);
-						return_message.setType(MessageType.REPLY);
-
-						System.out.println("--SENT REPLY to "+socketHostname+"--");
-
-						o_out.writeObject(return_message);
-
-					} else {
+					
+					while(true) {
 						
-						//lower id = high priority
-						if(pendingReleaseToReceive < client_id) {
+						if(pendingReleaseToReceive == 0 ) {
 
-							request_fifo.add(client_id);
-							
-							return_message.setId(id);
-							return_message.setType(MessageType.FAILED);
+							if(pendingRepliesToReceive.size() != 0) {
 
-							System.out.println("--SENT FAILED "+socketHostname+"--");
+								pendingReleaseToReceive = client_id;
 
-							o_out.writeObject(return_message);
+								return_message.setId(id);
+								return_message.setType(MessageType.REPLY);
+
+								System.out.println("--SENT REPLY to "+socketHostname+"--");
+
+								o_out.writeObject(return_message);
+
+								break;
+							} 
 
 						} else {
-							
-							//System.out.println("--wait for enquire sema(request)-");
-							//gotReplyofEnquire.acquire();
 
-							pendingReplyofEnquire = pendingReleaseToReceive;
+							//lower id = high priority
+							if(pendingReleaseToReceive < client_id) {
 
-							return_message.setId(id);
-							return_message.setType(MessageType.ENQUIRE);
+								request_fifo.add(client_id);
 
-							System.out.println("--SENT ENQUIRE  "+socketHostname+"--");
+								return_message.setId(id);
+								return_message.setType(MessageType.FAILED);
 
-							InetSocketAddress addr = otherClients.get(pendingReleaseToReceive);
-							String client_hostname = addr.getHostName();
-							SocketMap client_socket_map = allClientsSockets.get(client_hostname);
+								System.out.println("--SENT FAILED "+socketHostname+"--");
 
-							client_socket_map.getO_out().writeObject(return_message);
+								o_out.writeObject(return_message);
+								
+								break;
 
+							} else {
 
+								if(pendingReleaseToReceive != id) {
+
+									return_message.setId(id);
+									return_message.setType(MessageType.ENQUIRE);
+
+									System.out.println("--SENT ENQUIRE  "+socketHostname+"--");
+
+									InetSocketAddress addr = otherClients.get(pendingReleaseToReceive);
+									String client_hostname = addr.getHostName();
+									SocketMap client_socket_map = allClientsSockets.get(client_hostname);
+
+									client_socket_map.getO_out().writeObject(return_message);
+									
+									break;
+								}
+
+							}
 						}
+						
+						Thread.sleep(20);
+					
 					}
+					
 				}
-				
 				if(message.getType().equals(MessageType.RELEASE)) {
 										
 					if(pendingReleaseToReceive == client_id) {
@@ -142,41 +155,38 @@ public class ClientsClientThreadListener extends Client {
 						gotReplyofEnquire.release();
 					
 					}*/
-					
-					if(gotFailed == 1) {
-						
-						return_message.setId(id);
-						return_message.setType(MessageType.YIELD);
-						
-						sentYieldMessageTo.put(client_id, true);
-						
-						System.out.println("--SENT YIELD "+socketHostname+"--");
+					while(gotFailed == 1 || sentYield == 1) {
+						if(gotFailed == 1) {
 
-						o_out.writeObject(return_message);
-					
-					} else if (sentYield == 1) {
-												
-						return_message.setId(id);
-						return_message.setType(MessageType.YIELD);
-											
-						InetSocketAddress addr = otherClients.get(client_id);
-						String client_hostname = addr.getHostName();
-						SocketMap client_socket_map = allClientsSockets.get(client_hostname);
-						
-						System.out.println("--SENT YIELD "+client_hostname+"--");
-												
-						client_socket_map.getO_out().writeObject(return_message);
-					
-					} else {
-						//enquire queue
+							return_message.setId(id);
+							return_message.setType(MessageType.YIELD);
+
+							sentYieldMessageTo.put(client_id, true);
+
+							System.out.println("--SENT YIELD "+socketHostname+"--");
+
+							o_out.writeObject(return_message);
+							break;
+
+						} else if (sentYield == 1) {
+
+							return_message.setId(id);
+							return_message.setType(MessageType.YIELD);
+
+							InetSocketAddress addr = otherClients.get(client_id);
+							String client_hostname = addr.getHostName();
+							SocketMap client_socket_map = allClientsSockets.get(client_hostname);
+
+							System.out.println("--SENT YIELD "+client_hostname+"--");
+
+							client_socket_map.getO_out().writeObject(return_message);
+							break;
+						}
+						Thread.sleep(20);
 					}
 				}
 				
-				if(message.getType().equals(MessageType.YIELD)) {
-					//sends grant or reply to top request in the queue
-					//TODO send to top request
-					//System.out.println("--released enquire sema(yield)-");
-					//gotReplyofEnquire.release();
+				if(message.getType().equals(MessageType.YIELD)) {	
 					
 					sentYield = 1;
 					

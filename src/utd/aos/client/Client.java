@@ -47,10 +47,8 @@ public class Client implements Runnable{
 	
 	//public static Semaphore gotallReplies = new Semaphore(1);
 	//public static Semaphore gotallReleases = new Semaphore(1);
-	//public static Semaphore gotReplyofEnquire = new Semaphore(1);
 	
 	public static int pendingReleaseToReceive;
-	public static int pendingReplyofEnquire;
 	public static int gotFailed;
 	public static int sentYield;
 	
@@ -58,7 +56,6 @@ public class Client implements Runnable{
 	public static Map<Integer, Boolean> gotFailedMessageFrom = new HashMap<Integer, Boolean>();
 	public static Map<Integer, Boolean> sentYieldMessageTo = new HashMap<Integer, Boolean>();
 	
-	//public static Queue<Integer> pq_fifo = new PriorityQueue<Integer>();
 	public static Queue<Integer> request_fifo = new LinkedList<Integer>(); 
 	public static Queue<Integer> enquire_fifo = new LinkedList<Integer>(); 
 
@@ -112,11 +109,11 @@ public class Client implements Runnable{
 						new ClientMainThread(operation).run();//).start();
 						
 					} else {
-						System.out.println("--WAIT allreply sema (other request)--");
+						//System.out.println("--WAIT allreply sema (other request)--");
 						//gotallReplies.acquire();
 						serveOthersRequest(request_fifo.remove());
 						
-						System.out.println("--RELEASE allreply sema (other request)--");
+						//System.out.println("--RELEASE allreply sema (other request)--");
 						//gotallReplies.release();
 					}
 				}				
@@ -138,61 +135,49 @@ public class Client implements Runnable{
 
 		if(pendingReleaseToReceive == 0 ) {
 						
-			if(pendingRepliesToReceive.size() == 0) {
-				
+			if(pendingRepliesToReceive.size() != 0) {
+
 				pendingReleaseToReceive = client_id;
 
 				return_message.setId(id);
 				return_message.setType(MessageType.REPLY);
 
-				System.out.println("----SENT REPLY "+socketHostname+"--");
+				System.out.println("--SENT REPLY to "+socketHostname+"--");
 
 				socketMap.getO_out().writeObject(return_message);
-				
-			} else if (pendingRepliesToReceive.size() != 0) {
-				
-				pendingReleaseToReceive = client_id;
 
-				return_message.setId(id);
-				return_message.setType(MessageType.REPLY);
+			} 
 
-				System.out.println("----SENT REPLY to "+socketHostname+"--");
-
-				socketMap.getO_out().writeObject(return_message);
-				
-			}
-			
-
-		} else if (pendingReleaseToReceive != 0) {
+		} else {
 			
 			//lower id = high priority
 			if(pendingReleaseToReceive < client_id) {
 
+				request_fifo.add(client_id);
+
 				return_message.setId(id);
 				return_message.setType(MessageType.FAILED);
 
-				System.out.println("----SENT FAILED to "+socketHostname+"--");
+				System.out.println("--SENT FAILED "+socketHostname+"--");
+
 				socketMap.getO_out().writeObject(return_message);
-
+				
 			} else {
-				
-				//System.out.println("--wait for enquire sema(request)-");
-				
 
-				pendingReplyofEnquire = pendingReleaseToReceive;
+				if(pendingReleaseToReceive != id) {
 
-				return_message.setId(id);
-				return_message.setType(MessageType.ENQUIRE);
+					return_message.setId(id);
+					return_message.setType(MessageType.ENQUIRE);
 
-				System.out.println("----SENT ENQUIRE "+socketHostname+"--");
+					System.out.println("--SENT ENQUIRE  "+socketHostname+"--");
 
-				InetSocketAddress addr = otherClients.get(pendingReleaseToReceive);
-				String client_hostname = addr.getHostName();
-				SocketMap client_socket_map = allClientsSockets.get(client_hostname);
+					InetSocketAddress addr = otherClients.get(pendingReleaseToReceive);
+					String client_hostname = addr.getHostName();
+					SocketMap client_socket_map = allClientsSockets.get(client_hostname);
 
-				client_socket_map.getO_out().writeObject(return_message);
-
-
+					client_socket_map.getO_out().writeObject(return_message);
+					
+				}
 			}
 		}
 	}
@@ -260,7 +245,6 @@ public class Client implements Runnable{
 	public void reset() {
 		
 		pendingReleaseToReceive = 0;
-		pendingReplyofEnquire = 0;
 		gotFailed = 0;
 		sentYield = 0;
 		
@@ -273,7 +257,7 @@ public class Client implements Runnable{
 	public boolean getMutex() throws InterruptedException, IOException {
 		
 		
-		System.out.println("--WAIT allreply sema (mutex)--");
+		//System.out.println("--WAIT allreply sema (mutex)--");
 		//gotallReplies.acquire();
 		
 		for(Map.Entry<String, SocketMap> entry: quorum.entrySet()) {

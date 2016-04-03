@@ -22,10 +22,8 @@ public class ClientsServerThreadListener extends Client {
 			if(message.getType().equals(MessageType.FAILED)) {
 				
 				gotFailedMessageFrom.put(client_id, true);
-				pendingReplyofEnquire = 0;
 			
 				System.out.println("--RECV FAILED "+client_id+"-");
-				//gotReplyofEnquire.release();
 				gotFailed = 1;
 			}
 			
