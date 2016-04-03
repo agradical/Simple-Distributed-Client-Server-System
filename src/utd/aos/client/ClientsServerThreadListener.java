@@ -1,10 +1,9 @@
 package utd.aos.client;
 
 import java.io.ObjectInputStream;
-import java.net.InetSocketAddress;
-import java.util.Iterator;
 
 import utd.aos.utils.MutexMessage;
+import utd.aos.utils.Request;
 import utd.aos.utils.MutexMessage.MessageType;
 import utd.aos.utils.SocketMap;
 
@@ -37,10 +36,15 @@ public class ClientsServerThreadListener extends Client {
 			}
 			
 			int client_id = message.getId();
-			String hostname = socketmap.getAddr().getHostName();
+			//String hostname = socketmap.getAddr().getHostName();
 			
 			if(message.getType().equals(MessageType.YIELD)) {	
 				
+				
+				Request req = new Request(client_id, socketmap, MessageType.YIELD);
+				request_q.add(req);
+				
+				/*
 				record.yield++;
 				System.out.println("--RECV YIELD "+hostname);
 				
@@ -88,19 +92,27 @@ public class ClientsServerThreadListener extends Client {
 				client_socket_map.getO_out().writeObject(return_message);
 				
 				record.grant++;
+				*/
 			}
 			
 			if(message.getType().equals(MessageType.FAILED)) {
 			
+				Request req = new Request(client_id, socketmap, MessageType.FAILED);
+				request_q.add(req);
+				/*
 				System.out.println("--RECV FAILED "+hostname+"-");
 				gotFailed = 1;
 				
 				record.fail++;
+				*/
 			}
 			
 			
 			if(message.getType().equals(MessageType.REPLY) && pendingRepliesToReceive.containsKey(client_id)) {
 				
+				Request req = new Request(client_id, socketmap, MessageType.REPLY);
+				request_q.add(req);
+				/*
 				System.out.println("--RECV REPLY "+hostname+"--");
 				
 				pendingRepliesToReceive.remove(client_id);
@@ -112,8 +124,8 @@ public class ClientsServerThreadListener extends Client {
 				
 				}
 				record.reply++;
+				*/
 			}
-			
 			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

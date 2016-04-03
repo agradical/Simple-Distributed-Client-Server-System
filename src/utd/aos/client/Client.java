@@ -17,6 +17,7 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Random;
 import java.util.concurrent.Semaphore;
@@ -30,6 +31,8 @@ import utd.aos.utils.Resource;
 import utd.aos.utils.SocketMap;
 import utd.aos.utils.Operations.OperationMethod;
 import utd.aos.utils.Operations.OperationType;
+import utd.aos.utils.Request;
+import utd.aos.utils.RequestComparator;
 
 public class Client implements Runnable{
 	
@@ -55,6 +58,8 @@ public class Client implements Runnable{
 	public static int sentYield;
 	public static int sentEnquire;
 	
+	public static long clock;
+	
 	public static boolean inprocess = false;
 	
 	public static Map<Integer, Boolean> pendingRepliesToReceive = new HashMap<Integer, Boolean>();
@@ -66,6 +71,7 @@ public class Client implements Runnable{
 	public static int count = 1;
 	public static MessageRecord record = new MessageRecord();
 	
+	public static PriorityQueue<Request> request_q = new PriorityQueue<Request>();
 	
 	public Client() {
 	
@@ -90,6 +96,7 @@ public class Client implements Runnable{
 			reset();
 
 			try {
+				
 				Thread.sleep(delay);
 
 				Resource resource = new Resource();
@@ -102,14 +109,9 @@ public class Client implements Runnable{
 				operation.setArg(id+" : "+count+" : "+InetAddress.getLocalHost().getHostName()+"\n");
 
 				
-				System.out.println("--adding my request to fifo--");			
+				System.out.println("--adding my request to fifo--");
 				
-				
-				
-				//while(pendingReleaseToReceive != 0) {
-				//	Thread.sleep(20);
-				//} 
-				
+				/*
 				request_fifo.add(id);
 				
 				//int size = request_fifo.size();
@@ -143,6 +145,40 @@ public class Client implements Runnable{
 					
 					//size--;
 				}				
+				*/
+				Request request = new Request(id, null, MessageType.REQUEST);
+				request_q.add(request);
+				while(!request_q.isEmpty()) {
+					
+					Request req = request_q.remove();
+					
+					if(req.getType().equals(MessageType.REQUEST)) {
+						handleRequest(req, operation);
+					}
+					if(req.getType().equals(MessageType.REPLY)) {
+						handleReply(req);
+					}
+					if(req.getType().equals(MessageType.RELEASE)) {
+						handleRelease(req);
+					}
+					if(req.getType().equals(MessageType.FAILED)) {
+						handleFail(req);
+					}
+					if(req.getType().equals(MessageType.ENQUIRE)) {
+						handleEnquire(req);
+					}
+					if(req.getType().equals(MessageType.YIELD)) {
+						handleYield(req);
+					}
+					if(req.getType().equals(MessageType.GRANT)) {
+						handleGrant(req);
+					}
+				}
+				
+				while(inprocess) {
+					//wait
+					Thread.sleep(50);
+				}
 				
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -165,6 +201,235 @@ public class Client implements Runnable{
 		}
 	}
 
+	public void handleRequest(Request req, Operations operation) throws IOException, InterruptedException, ClassNotFoundException {		
+		
+		if(req.getId() == id) {
+			
+			new Thread(new ClientMainThread(operation)).start();
+
+		} else {
+			
+			SocketMap socketmap = req.getSocketmap();
+			String socketHostname = socketmap.getAddr().getHostName();
+
+			int client_id = req.getId();
+			record.request++;
+			System.out.println("--RECV REQUEST "+socketHostname+"--");
+				
+				//clock = Math.max(message.getClock(), clock) + 1;
+				MutexMessage return_message = new MutexMessage();
+				
+				if(pendingReleaseToReceive == 0 ) {
+
+					pendingReleaseToReceive = client_id;
+
+					return_message.setId(id);
+					return_message.setType(MessageType.REPLY);
+
+					System.out.println("--SENT REPLY to "+socketHostname+"--");
+
+					socketmap.getO_out().writeObject(return_message);
+
+					record.reply++;
+
+				} else {
+
+					//lower id = high priority
+					if(pendingReleaseToReceive < client_id) {
+
+						return_message.setId(id);
+						return_message.setType(MessageType.FAILED);
+
+						System.out.println("--SENT FAILED "+socketHostname+"--");
+
+						socketmap.getO_out().writeObject(return_message);
+
+						record.fail++;
+
+					} else {
+
+						if(pendingReleaseToReceive != id) {
+
+							return_message.setId(id);
+							return_message.setType(MessageType.ENQUIRE);
+
+
+							InetSocketAddress addr = otherClients.get(pendingReleaseToReceive);
+							String client_hostname = addr.getHostName();
+							SocketMap client_socket_map = allClientsSockets.get(client_hostname);
+
+							System.out.println("--SENT ENQUIRE  "+client_hostname+"--");
+
+							client_socket_map.getO_out().writeObject(return_message);
+
+							record.enquire++;
+
+							sentEnquire = 1;
+
+						} else {
+
+							request_q.add(req);
+						}
+
+					}
+				} 
+		}
+	}
+	
+	public void handleReply(Request req) {
+		SocketMap socketmap = req.getSocketmap();
+		String socketHostname = socketmap.getAddr().getHostName();
+		int client_id = req.getId();
+		
+		System.out.println("--RECV REPLY "+socketHostname+"--");
+		
+		pendingRepliesToReceive.remove(client_id);
+
+		record.reply++;
+	}
+	
+	public void handleRelease(Request req) {
+		
+		SocketMap socketmap = req.getSocketmap();
+		String socketHostname = socketmap.getAddr().getHostName();
+
+		System.out.println("---RECV RELEASE  "+ socketHostname+" --");
+
+		pendingReleaseToReceive = 0;
+
+		System.out.println("--Releasing release sema(release)-");
+
+		record.release++;
+
+	}
+	public void handleEnquire(Request req) throws IOException {
+
+		SocketMap socketmap = req.getSocketmap();
+		String socketHostname = socketmap.getAddr().getHostName();
+		int client_id = req.getId();
+		record.enquire++;
+		System.out.println("--RECV ENQUIRE "+socketHostname);
+		MutexMessage return_message = new MutexMessage();
+		
+		if(pendingReleaseToReceive == 0) {
+			
+			pendingReleaseToReceive = client_id;
+
+			return_message.setId(id);
+			return_message.setType(MessageType.REPLY);
+			
+			System.out.println("--SENT REPLY "+socketHostname+"--");
+
+			socketmap.getO_out().writeObject(return_message);
+			
+			record.reply++;
+			
+		} else if(gotFailed == 1) {
+
+			return_message.setId(id);
+			return_message.setType(MessageType.YIELD);
+
+			sentYieldMessageTo.put(client_id, true);
+
+			sentYield = 1;
+			System.out.println("--SENT YIELD "+socketHostname+"--");
+
+			socketmap.getO_out().writeObject(return_message);
+
+			record.yield++;
+
+
+		} else if (sentYield == 1) {
+
+			return_message.setId(id);
+			return_message.setType(MessageType.YIELD);
+
+			sentYieldMessageTo.put(client_id, true);
+			sentYield = 1;
+
+			System.out.println("--SENT YIELD "+socketHostname+"--");
+
+			socketmap.getO_out().writeObject(return_message);
+
+			record.yield++;
+
+		} else {
+			
+			request_q.add(req);
+			
+		} 
+
+	}
+	
+	public void handleFail(Request req) {
+		SocketMap socketmap = req.getSocketmap();
+		String socketHostname = socketmap.getAddr().getHostName();
+		
+		System.out.println("--RECV FAILED "+socketHostname+"-");
+		gotFailed = 1;
+		
+		record.fail++;
+	}
+	public void handleYield(Request req) throws IOException {
+		
+		SocketMap socketmap = req.getSocketmap();
+		String socketHostname = socketmap.getAddr().getHostName();
+
+		record.yield++;
+		System.out.println("--RECV YIELD "+socketHostname);
+		
+		request_q.add(req);
+		
+		if(pendingReleaseToReceive == 0) {
+			Request top = request_q.remove();
+			
+			pendingReleaseToReceive = top.getId();
+			sentEnquire = 0;
+
+			InetSocketAddress addr = otherClients.get(top.getId());
+
+			MutexMessage return_message = new MutexMessage();
+
+			String client_hostname = addr.getHostName();
+			SocketMap client_socket_map = allClientsSockets.get(client_hostname);
+
+			return_message.setId(id);
+			return_message.setType(MessageType.GRANT);
+
+			System.out.println("--SENT GRANT "+client_hostname+"--");
+
+			client_socket_map.getO_out().writeObject(return_message);
+
+			record.grant++;
+		}
+		
+	}
+	
+	public void handleGrant(Request req) {
+		SocketMap socketmap = req.getSocketmap();
+		String socketHostname = socketmap.getAddr().getHostName();
+		int client_id = req.getId();
+		
+		System.out.println("--RECV GRANT "+socketHostname+"--");
+		
+		if(sentYieldMessageTo.containsKey(client_id)) {
+			sentYieldMessageTo.remove(client_id);
+			if(sentYieldMessageTo.size() == 0) {
+				sentYield = 0;
+			}
+		}
+		
+		if(pendingRepliesToReceive.containsKey(client_id)) {
+			pendingRepliesToReceive.remove(client_id);
+		}
+		
+		if(pendingReleaseToReceive == client_id)  {
+			pendingReleaseToReceive = 0;
+		}
+		record.grant++;
+	}
+	
+	
 	public void printreport(){
 		File file = new File("record_"+id);
 		try {
@@ -311,6 +576,8 @@ public class Client implements Runnable{
 				} 
 			}
 		}
+		
+		request_q = new PriorityQueue<Request>(30, new RequestComparator());
 
 	}
 	
