@@ -29,6 +29,7 @@ public class ClientsServerThreadListener extends Client {
 			if(object instanceof MutexMessage) {
 				message = (MutexMessage)object;
 			} else {
+				System.out.println("--->"+socketmap.getSocket().getInetAddress().getHostName()+"<---");
 				System.out.println("------------DOOMED----------"+ object.getClass());
 			}
 			
