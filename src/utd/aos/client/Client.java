@@ -180,7 +180,6 @@ public class Client implements Runnable{
 			String socketHostname = socketmap.getAddr().getHostName();
 
 			int client_id = req.getId();
-			record.request++;
 			System.out.println("--RECV REQUEST "+socketHostname+"--");
 				
 				//clock = Math.max(message.getClock(), clock) + 1;
@@ -188,11 +187,8 @@ public class Client implements Runnable{
 				
 				if(pendingReleaseToReceive == 0 ) {
 
-					if(pendingRepliesToReceive.size() == 0) {
-						request_q.add(req);
-						return;
-					}
-					
+					record.request++;
+
 					pendingReleaseToReceive = client_id;
 
 					return_message.setId(id);
@@ -208,7 +204,9 @@ public class Client implements Runnable{
 
 					//lower id = high priority
 					if(pendingReleaseToReceive < client_id) {
-
+						
+						record.request++;
+						
 						return_message.setId(id);
 						return_message.setType(MessageType.FAILED);
 
@@ -225,6 +223,7 @@ public class Client implements Runnable{
 							return_message.setId(id);
 							return_message.setType(MessageType.ENQUIRE);
 
+							record.request++;
 
 							InetSocketAddress addr = otherClients.get(pendingReleaseToReceive);
 							String client_hostname = addr.getHostName();
@@ -279,17 +278,13 @@ public class Client implements Runnable{
 		SocketMap socketmap = req.getSocketmap();
 		String socketHostname = socketmap.getAddr().getHostName();
 		int client_id = req.getId();
-		record.enquire++;
 		System.out.println("--RECV ENQUIRE "+socketHostname);
 		MutexMessage return_message = new MutexMessage();
 		
 		if(pendingReleaseToReceive == 0) {
 			
-			if(pendingRepliesToReceive.size() == 0) {
-				request_q.add(req);
-				return;
-			}
-			
+			record.enquire++;
+
 			pendingReleaseToReceive = client_id;
 
 			return_message.setId(id);
@@ -302,6 +297,8 @@ public class Client implements Runnable{
 			record.reply++;
 			
 		} else if(gotFailed == 1) {
+
+			record.enquire++;
 
 			return_message.setId(id);
 			return_message.setType(MessageType.YIELD);
@@ -318,6 +315,8 @@ public class Client implements Runnable{
 
 		} else if (sentYield == 1) {
 
+			record.enquire++;
+
 			return_message.setId(id);
 			return_message.setType(MessageType.YIELD);
 
@@ -332,6 +331,8 @@ public class Client implements Runnable{
 
 		} else if (sentEnquire == 1){
 			
+			record.enquire++;
+
 			return_message.setId(id);
 			return_message.setType(MessageType.YIELD);
 
