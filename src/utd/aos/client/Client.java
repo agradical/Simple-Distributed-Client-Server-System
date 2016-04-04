@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Random;
 import java.util.concurrent.Semaphore;
@@ -33,7 +32,6 @@ import utd.aos.utils.SocketMap;
 import utd.aos.utils.Operations.OperationMethod;
 import utd.aos.utils.Operations.OperationType;
 import utd.aos.utils.Request;
-import utd.aos.utils.RequestComparator;
 
 public class Client implements Runnable{
 	
@@ -72,7 +70,9 @@ public class Client implements Runnable{
 	public static int count = 1;
 	public static MessageRecord record = new MessageRecord();
 	
-	public static PriorityQueue<Request> request_q;
+	public static Queue<Request> request_q;
+	public static Queue<Request> enquire_q;
+	
 	boolean curr_req_done = false;
 	public Client() {
 	
@@ -281,7 +281,7 @@ public class Client implements Runnable{
 		System.out.println("--RECV ENQUIRE "+socketHostname);
 		MutexMessage return_message = new MutexMessage();
 		
-		if(pendingReleaseToReceive == 0) {
+		if(pendingReleaseToReceive == 0 || gotFailed == 1 || sentYield == 1 ) {
 			
 			record.enquire++;
 
@@ -296,39 +296,8 @@ public class Client implements Runnable{
 			
 			record.reply++;
 			
-		} else if(gotFailed == 1) {
-
-			record.enquire++;
-
-			return_message.setId(id);
-			return_message.setType(MessageType.YIELD);
-
-			sentYieldMessageTo.put(client_id, true);
-
-			sentYield = 1;
-			System.out.println("--SENT YIELD "+socketHostname+"--");
-
-			socketmap.getO_out().writeObject(return_message);
-
-			record.yield++;
-
-
-		} else if (sentYield == 1) {
-
-			record.enquire++;
-
-			return_message.setId(id);
-			return_message.setType(MessageType.YIELD);
-
-			sentYieldMessageTo.put(client_id, true);
-			sentYield = 1;
-
-			System.out.println("--SENT YIELD "+socketHostname+"--");
-
-			socketmap.getO_out().writeObject(return_message);
-
-			record.yield++;
-
+			handleEnquireQ();
+			
 		} else if (sentEnquire == 1){
 			
 			record.enquire++;
@@ -345,15 +314,46 @@ public class Client implements Runnable{
 
 			record.yield++;
 			
+			handleEnquireQ();
+			
 		} else {
 			
-			request_q.add(req);
+			enquire_q.add(req);
 			
 		} 
 
 	}
 	
-	public void handleFail(Request req) {
+	public void handleEnquireQ() throws IOException {
+		
+		while(!enquire_q.isEmpty()) {
+			
+			Request req = enquire_q.remove();
+			
+			SocketMap socketmap = req.getSocketmap();
+			String socketHostname = socketmap.getAddr().getHostName();
+			int client_id = req.getId();
+			
+			System.out.println("--RECV ENQUIRE "+socketHostname);
+			MutexMessage return_message = new MutexMessage();
+			
+			record.enquire++;
+
+			return_message.setId(id);
+			return_message.setType(MessageType.YIELD);
+
+			sentYieldMessageTo.put(client_id, true);
+			sentYield = 1;
+
+			System.out.println("--SENT YIELD "+socketHostname+"--");
+
+			socketmap.getO_out().writeObject(return_message);
+
+			record.yield++;
+		}
+	}
+	
+	public void handleFail(Request req) throws IOException {
 		SocketMap socketmap = req.getSocketmap();
 		String socketHostname = socketmap.getAddr().getHostName();
 		
@@ -361,7 +361,10 @@ public class Client implements Runnable{
 		gotFailed = 1;
 		
 		record.fail++;
+		
+		handleEnquireQ();
 	}
+	
 	public void handleYield(Request req) throws IOException, InterruptedException {
 		
 		SocketMap socketmap = req.getSocketmap();
@@ -514,8 +517,11 @@ public class Client implements Runnable{
 					System.out.println("Connect success: "+ip.getHostName()+"->"+addr.getHostName());
 
 					if(request_q == null) {
-						request_q = new PriorityQueue<Request>(30, new RequestComparator());
-						//request_q = new LinkedList<Request>();
+						//request_q = new PriorityQueue<Request>(30, new RequestComparator());
+						request_q = new LinkedList<Request>();
+					}
+					if(enquire_q == null) {
+						enquire_q = new LinkedList<Request>();
 					}
 					
 					break;
