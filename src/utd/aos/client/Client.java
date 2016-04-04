@@ -152,28 +152,30 @@ public class Client implements Runnable{
 				request_q.add(request);
 				while(!request_q.isEmpty() || !curr_req_done) {
 
-					Request req = request_q.remove();
+					if(!request_q.isEmpty()) {
+						Request req = request_q.remove();
 
-					if(req.getType().equals(MessageType.REQUEST)) {
-						handleRequest(req, operation);
-					}
-					else if(req.getType().equals(MessageType.REPLY)) {
-						handleReply(req);
-					}
-					else if(req.getType().equals(MessageType.RELEASE)) {
-						handleRelease(req);
-					}
-					else if(req.getType().equals(MessageType.FAILED)) {
-						handleFail(req);
-					}
-					else if(req.getType().equals(MessageType.ENQUIRE)) {
-						handleEnquire(req);
-					}
-					else if(req.getType().equals(MessageType.YIELD)) {
-						handleYield(req);
-					}
-					else if(req.getType().equals(MessageType.GRANT)) {
-						handleGrant(req);
+						if(req.getType().equals(MessageType.REQUEST)) {
+							handleRequest(req, operation);
+						}
+						else if(req.getType().equals(MessageType.REPLY)) {
+							handleReply(req);
+						}
+						else if(req.getType().equals(MessageType.RELEASE)) {
+							handleRelease(req);
+						}
+						else if(req.getType().equals(MessageType.FAILED)) {
+							handleFail(req);
+						}
+						else if(req.getType().equals(MessageType.ENQUIRE)) {
+							handleEnquire(req);
+						}
+						else if(req.getType().equals(MessageType.YIELD)) {
+							handleYield(req);
+						}
+						else if(req.getType().equals(MessageType.GRANT)) {
+							handleGrant(req);
+						}
 					}
 
 					Thread.sleep(10);
