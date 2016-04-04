@@ -181,69 +181,69 @@ public class Client implements Runnable{
 
 			int client_id = req.getId();
 			System.out.println("--RECV REQUEST "+socketHostname+"--");
-				
-				//clock = Math.max(message.getClock(), clock) + 1;
-				MutexMessage return_message = new MutexMessage();
-				
-				if(pendingReleaseToReceive == 0 ) {
+
+			//clock = Math.max(message.getClock(), clock) + 1;
+			MutexMessage return_message = new MutexMessage();
+
+			if(pendingReleaseToReceive == 0 ) {
+
+				record.request++;
+
+				pendingReleaseToReceive = client_id;
+
+				return_message.setId(id);
+				return_message.setType(MessageType.REPLY);
+
+				System.out.println("--SENT REPLY to "+socketHostname+"--");
+
+				socketmap.getO_out().writeObject(return_message);
+
+				record.reply++;
+
+			} else {
+
+				//lower id = high priority
+				if(pendingReleaseToReceive < client_id) {
 
 					record.request++;
 
-					pendingReleaseToReceive = client_id;
-
 					return_message.setId(id);
-					return_message.setType(MessageType.REPLY);
+					return_message.setType(MessageType.FAILED);
 
-					System.out.println("--SENT REPLY to "+socketHostname+"--");
+					System.out.println("--SENT FAILED "+socketHostname+"--");
 
 					socketmap.getO_out().writeObject(return_message);
 
-					record.reply++;
+					record.fail++;
 
 				} else {
 
-					//lower id = high priority
-					if(pendingReleaseToReceive < client_id) {
-						
-						record.request++;
-						
+					if(pendingReleaseToReceive != id) {
+
 						return_message.setId(id);
-						return_message.setType(MessageType.FAILED);
+						return_message.setType(MessageType.ENQUIRE);
 
-						System.out.println("--SENT FAILED "+socketHostname+"--");
+						record.request++;
 
-						socketmap.getO_out().writeObject(return_message);
+						InetSocketAddress addr = otherClients.get(pendingReleaseToReceive);
+						String client_hostname = addr.getHostName();
+						SocketMap client_socket_map = allClientsSockets.get(client_hostname);
 
-						record.fail++;
+						System.out.println("--SENT ENQUIRE  "+client_hostname+"--");
+
+						client_socket_map.getO_out().writeObject(return_message);
+
+						record.enquire++;
+
+						sentEnquire = 1;
 
 					} else {
 
-						if(pendingReleaseToReceive != id) {
-
-							return_message.setId(id);
-							return_message.setType(MessageType.ENQUIRE);
-
-							record.request++;
-
-							InetSocketAddress addr = otherClients.get(pendingReleaseToReceive);
-							String client_hostname = addr.getHostName();
-							SocketMap client_socket_map = allClientsSockets.get(client_hostname);
-
-							System.out.println("--SENT ENQUIRE  "+client_hostname+"--");
-
-							client_socket_map.getO_out().writeObject(return_message);
-
-							record.enquire++;
-
-							sentEnquire = 1;
-
-						} else {
-
-							request_q.add(req);
-						}
-
+						request_q.add(req);
 					}
-				} 
+
+				}
+			} 
 		}
 	}
 	

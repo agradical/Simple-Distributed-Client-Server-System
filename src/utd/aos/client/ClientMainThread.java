@@ -18,15 +18,10 @@ public class ClientMainThread extends Client {
 			
 			getMutex();
 			
-			while(pendingReleaseToReceive != 0) {
-				
-				while(pendingRepliesToReceive.size() != 0 ) {
-					Thread.sleep(2);
-				}
-				if(pendingRepliesToReceive.size() == 0) {
-					break;
-				}
-				
+			while(pendingReleaseToReceive != 0 || pendingRepliesToReceive.size() != 0) {
+			
+				Thread.sleep(2);
+
 			}
 
 			pendingReleaseToReceive = id;
