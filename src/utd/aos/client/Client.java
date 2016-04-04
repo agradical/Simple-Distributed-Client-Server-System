@@ -15,6 +15,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.PriorityQueue;
@@ -71,7 +72,7 @@ public class Client implements Runnable{
 	public static int count = 1;
 	public static MessageRecord record = new MessageRecord();
 	
-	public static PriorityQueue<Request> request_q;
+	public static Queue<Request> request_q;
 	boolean curr_req_done = false;
 	public Client() {
 	
@@ -373,38 +374,59 @@ public class Client implements Runnable{
 		
 		record.fail++;
 	}
-	public void handleYield(Request req) throws IOException {
+	public void handleYield(Request req) throws IOException, InterruptedException {
 		
 		SocketMap socketmap = req.getSocketmap();
 		String socketHostname = socketmap.getAddr().getHostName();
-
+		int client_id = req.getId();
 		record.yield++;
 		System.out.println("--RECV YIELD "+socketHostname);
 		
-		request_q.add(req);
-		
-		if(pendingReleaseToReceive == 0) {
-			Request top = request_q.remove();
-			
-			pendingReleaseToReceive = top.getId();
-			sentEnquire = 0;
-
-			InetSocketAddress addr = otherClients.get(top.getId());
-
-			MutexMessage return_message = new MutexMessage();
-
-			String client_hostname = addr.getHostName();
-			SocketMap client_socket_map = allClientsSockets.get(client_hostname);
-
-			return_message.setId(id);
-			return_message.setType(MessageType.GRANT);
-
-			System.out.println("--SENT GRANT "+client_hostname+"--");
-
-			client_socket_map.getO_out().writeObject(return_message);
-
-			record.grant++;
+		while(pendingReleaseToReceive == id) {
+			Thread.sleep(200);
+			System.out.println("WAIT in YIELD for Release");
 		}
+		
+		//request_fifo.add(client_id);
+		Iterator<Request> iterator = request_q.iterator();
+		int min_id_queued = 100;
+		while(iterator.hasNext()) {
+			
+			Request r = iterator.next();
+			int i = r.getId();
+			if(i < min_id_queued) {
+				min_id_queued = i;
+			}
+		}
+		
+		while(iterator.hasNext()) {
+			Request r = iterator.next();
+			int i = r.getId();
+			if(i == min_id_queued) {
+				iterator.remove();
+			}
+		}
+		
+		if(min_id_queued == 100 || min_id_queued > client_id) {
+			min_id_queued = client_id;
+		}
+
+		pendingReleaseToReceive = min_id_queued;
+		sentEnquire = 0;
+		
+		InetSocketAddress addr = otherClients.get(min_id_queued);
+		
+		MutexMessage return_message = new MutexMessage();
+		
+		String client_hostname = addr.getHostName();
+		SocketMap client_socket_map = allClientsSockets.get(client_hostname);
+				
+		return_message.setId(id);
+		return_message.setType(MessageType.GRANT);
+		
+		System.out.println("--SENT GRANT "+client_hostname+"--");
+		
+		client_socket_map.getO_out().writeObject(return_message);	
 		
 	}
 	
@@ -563,7 +585,8 @@ public class Client implements Runnable{
 					System.out.println("Connect success: "+ip.getHostName()+"->"+addr.getHostName());
 
 					if(request_q == null) {
-						request_q = new PriorityQueue<Request>(30, new RequestComparator());
+						//request_q = new PriorityQueue<Request>(30, new RequestComparator());
+						request_q = new LinkedList<Request>();
 					}
 					
 					break;
