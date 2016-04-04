@@ -61,85 +61,14 @@ public class ClientsClientThreadListener extends Client {
 					System.out.println("--->"+socket.getInetAddress().getHostName()+"<---");
 					System.out.println("------------DOOMED----------"+ object.getClass());
 				}
-				//MutexMessage return_message = new MutexMessage();
+				
 				int client_id = message.getId();
 
 				
 				if(message.getType().equals(MessageType.REQUEST)) {
-					/*
-					if(pendingRepliesToReceive.containsKey(message.getId())) {
-						if(id < message.getId()) {
-							gotallReleases.acquire();
-						}
-					} else {
-						gotallReleases.acquire();
-					}*/
 					
 					Request req = new Request(client_id, socketMap, MessageType.REQUEST);
 					request_q.add(req);
-					/*
-					record.request++;
-					System.out.println("--RECV REQUEST "+socketHostname+"--");
-
-					 
-						
-						//clock = Math.max(message.getClock(), clock) + 1;
-
-						if(pendingReleaseToReceive == 0 ) {
-
-							pendingReleaseToReceive = client_id;
-
-							return_message.setId(id);
-							return_message.setType(MessageType.REPLY);
-
-							System.out.println("--SENT REPLY to "+socketHostname+"--");
-
-							o_out.writeObject(return_message);
-
-							record.reply++;
-
-						} else {
-
-							//lower id = high priority
-							if(pendingReleaseToReceive < client_id) {
-
-								return_message.setId(id);
-								return_message.setType(MessageType.FAILED);
-
-								System.out.println("--SENT FAILED "+socketHostname+"--");
-
-								o_out.writeObject(return_message);
-
-								record.fail++;
-
-							} else {
-
-								if(pendingReleaseToReceive != id) {
-
-									return_message.setId(id);
-									return_message.setType(MessageType.ENQUIRE);
-
-
-									InetSocketAddress addr = otherClients.get(pendingReleaseToReceive);
-									String client_hostname = addr.getHostName();
-									SocketMap client_socket_map = allClientsSockets.get(client_hostname);
-
-									System.out.println("--SENT ENQUIRE  "+client_hostname+"--");
-
-									client_socket_map.getO_out().writeObject(return_message);
-
-									record.enquire++;
-
-									sentEnquire = 1;
-
-								} else {
-
-									request_fifo.add(client_id);
-								}
-
-							}
-						}*/ 
-
 					
 				}
 				
@@ -148,105 +77,13 @@ public class ClientsClientThreadListener extends Client {
 					Request req = new Request(client_id, socketMap, MessageType.RELEASE);
 					request_q.add(req);
 					
-					/*
-					if(pendingReleaseToReceive == client_id) {
-						System.out.println("---RECV RELEASE  "+ socketHostname+" --");
-
-						pendingReleaseToReceive = 0;
-						
-						System.out.println("--Releasing release sema(release)-");
-						//gotallReleases.release();
-						record.release++;
-					}*/
 				}
 				
 				
 				if(message.getType().equals(MessageType.ENQUIRE)) {
-					//sends grant or reply to top request in the queue
-					//TODO
-					
-					/*if(pendingReplyofEnquire != 0) {
-						
-						System.out.println("--wait for enquire sema(enquire)-");
-						gotReplyofEnquire.acquire();
-						
-						System.out.println("--released enquire sema(enquire)-");
-						gotReplyofEnquire.release();
-					
-					}*/
 					
 					Request req = new Request(client_id, socketMap, MessageType.ENQUIRE);
-					request_q.add(req);
-					
-					
-					/*
-					 record.enquire++;
-					 
-					System.out.println("--RECV ENQUIRE "+socketHostname);
-					
-					
-					while(gotFailed != 1 && sentYield != 1 && sentEnquire != 1 && pendingReleaseToReceive != 0 ) {
-						Thread.sleep(20);
-						System.out.println("WAITING for ENQUIRE "+socketHostname);
-					}
-					
-					if(pendingReleaseToReceive == 0) {
-						
-						pendingReleaseToReceive = client_id;
-
-						return_message.setId(id);
-						return_message.setType(MessageType.REPLY);
-						
-						System.out.println("--SENT REPLY "+socketHostname+"--");
-
-						o_out.writeObject(return_message);
-						
-						record.reply++;
-						
-					} else if(gotFailed == 1) {
-
-						return_message.setId(id);
-						return_message.setType(MessageType.YIELD);
-
-						sentYieldMessageTo.put(client_id, true);
-
-						sentYield = 1;
-						System.out.println("--SENT YIELD "+socketHostname+"--");
-
-						o_out.writeObject(return_message);
-
-						record.yield++;
-
-
-					} else if (sentYield == 1) {
-
-						return_message.setId(id);
-						return_message.setType(MessageType.YIELD);
-
-						sentYieldMessageTo.put(client_id, true);
-						sentYield = 1;
-
-						System.out.println("--SENT YIELD "+socketHostname+"--");
-
-						o_out.writeObject(return_message);
-
-						record.yield++;
-
-					} else {
-						
-						return_message.setId(id);
-						return_message.setType(MessageType.YIELD);
-
-						sentYieldMessageTo.put(client_id, true);
-						sentYield = 1;
-
-						System.out.println("--SENT YIELD "+socketHostname+"--");
-
-						o_out.writeObject(return_message);
-
-						record.yield++;
-					} 
-					*/
+					request_q.add(req);					
 					
 				}
 				
@@ -255,25 +92,6 @@ public class ClientsClientThreadListener extends Client {
 					Request req = new Request(client_id, socketMap, MessageType.GRANT);
 					request_q.add(req);
 					
-					/*
-					System.out.println("--RECV GRANT "+socketHostname+"--");
-					
-					if(sentYieldMessageTo.containsKey(client_id)) {
-						sentYieldMessageTo.remove(client_id);
-						if(sentYieldMessageTo.size() == 0) {
-							sentYield = 0;
-						}
-					}
-					
-					if(pendingRepliesToReceive.containsKey(client_id)) {
-						pendingRepliesToReceive.remove(client_id);
-					}
-					
-					if(pendingReleaseToReceive == client_id)  {
-						pendingReleaseToReceive = 0;
-					}
-					record.grant++;
-					*/
 				}
 				
 			}

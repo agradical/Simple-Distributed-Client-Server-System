@@ -36,75 +36,19 @@ public class ClientsServerThreadListener extends Client {
 			}
 			
 			int client_id = message.getId();
-			//String hostname = socketmap.getAddr().getHostName();
 			
 			if(message.getType().equals(MessageType.YIELD)) {	
 				
-				
 				Request req = new Request(client_id, socketmap, MessageType.YIELD);
-				request_q.add(req);
+				request_q.add(req);	
 				
-				/*
-				record.yield++;
-				System.out.println("--RECV YIELD "+hostname);
-				
-				while(pendingReleaseToReceive == id) {
-					Thread.sleep(200);
-					System.out.println("WAIT in YIELD for Release");
-				} 
-				
-				//request_fifo.add(client_id);
-				Iterator<Integer> iterator = request_fifo.iterator();
-				int min_id_queued = 100;
-				while(iterator.hasNext()) {
-					Integer i = iterator.next();
-					if(i < min_id_queued) {
-						min_id_queued = i;
-					}
-				}
-				
-				while(iterator.hasNext()) {
-					Integer i = iterator.next();
-					if(i == min_id_queued) {
-						iterator.remove();
-					}
-				}
-				
-				if(min_id_queued == 100 || min_id_queued > client_id) {
-					min_id_queued = client_id;
-				}
-
-				pendingReleaseToReceive = min_id_queued;
-				sentEnquire = 0;
-				
-				InetSocketAddress addr = otherClients.get(min_id_queued);
-				
-				MutexMessage return_message = new MutexMessage();
-				
-				String client_hostname = addr.getHostName();
-				SocketMap client_socket_map = allClientsSockets.get(client_hostname);
-						
-				return_message.setId(id);
-				return_message.setType(MessageType.GRANT);
-				
-				System.out.println("--SENT GRANT "+client_hostname+"--");
-				
-				client_socket_map.getO_out().writeObject(return_message);
-				
-				record.grant++;
-				*/
 			}
 			
 			if(message.getType().equals(MessageType.FAILED)) {
 			
 				Request req = new Request(client_id, socketmap, MessageType.FAILED);
 				request_q.add(req);
-				/*
-				System.out.println("--RECV FAILED "+hostname+"-");
-				gotFailed = 1;
 				
-				record.fail++;
-				*/
 			}
 			
 			
@@ -112,23 +56,11 @@ public class ClientsServerThreadListener extends Client {
 				
 				Request req = new Request(client_id, socketmap, MessageType.REPLY);
 				request_q.add(req);
-				/*
-				System.out.println("--RECV REPLY "+hostname+"--");
 				
-				pendingRepliesToReceive.remove(client_id);
-				
-				if(pendingRepliesToReceive.size() == 0) {
-					
-					//gotallReplies.release();
-					System.out.println("--RELEASING allreply sema in listener--");
-				
-				}
-				record.reply++;
-				*/
 			}
 			
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
+
 			e.printStackTrace();
 			try {
 				shutdown();

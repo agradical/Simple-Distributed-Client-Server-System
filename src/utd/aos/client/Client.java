@@ -78,9 +78,6 @@ public class Client implements Runnable{
 	
 	}
 
-	//MutexAlgorithm algo;
-	
-	//blocked: either me executing critical section or didn't get the release from last reply.
 	
 	@Override
 	public void run() {
@@ -114,41 +111,7 @@ public class Client implements Runnable{
 				
 				System.out.println("--adding my request to fifo--");
 				
-				/*
-				request_fifo.add(id);
-				
-				//int size = request_fifo.size();
-				while(!request_fifo.isEmpty()) {
-
-					
-					int top = request_fifo.remove();
-					if(top == id) {
-						inprocess = true;
-						new Thread(new ClientMainThread(operation)).start();//).start();
-
-					} else {
-						//System.out.println("--WAIT allreply sema (other request)--");
-						//gotallReplies.acquire();
-						serveOthersRequest(top);
-
-						//System.out.println("--RELEASE allreply sema (other request)--");
-						//gotallReplies.release();
-					}
-
-					
-					while(!request_fifo.isEmpty() || inprocess == true) {
-
-						if (!request_fifo.isEmpty()) {
-							serveOthersRequest(request_fifo.remove());
-						}
-						
-						Thread.sleep(20);
-					}
-					
-					
-					//size--;
-				}				
-				 */
+			
 				Request request = new Request(id, null, MessageType.REQUEST);
 				request_q.add(request);
 				while(!request_q.isEmpty() || !curr_req_done) {
@@ -207,7 +170,7 @@ public class Client implements Runnable{
 	public void handleRequest(Request req, Operations operation) throws IOException, InterruptedException, ClassNotFoundException {		
 		System.out.println("----- "+req.getId()+" ------");
 		if(req.getId() == id) {
-		
+	
 			inprocess = true;
 			new Thread(new ClientMainThread(operation)).start();
 
@@ -225,6 +188,11 @@ public class Client implements Runnable{
 				
 				if(pendingReleaseToReceive == 0 ) {
 
+					if(pendingRepliesToReceive.size() == 0) {
+						request_q.add(req);
+						return;
+					}
+					
 					pendingReleaseToReceive = client_id;
 
 					return_message.setId(id);
@@ -316,6 +284,11 @@ public class Client implements Runnable{
 		MutexMessage return_message = new MutexMessage();
 		
 		if(pendingReleaseToReceive == 0) {
+			
+			if(pendingRepliesToReceive.size() == 0) {
+				request_q.add(req);
+				return;
+			}
 			
 			pendingReleaseToReceive = client_id;
 
@@ -500,65 +473,6 @@ public class Client implements Runnable{
 		}
 	}
 	
-	public void serveOthersRequest(int client_id) throws InterruptedException, IOException {
-		InetSocketAddress host = otherClients.get(client_id);
-		String socketHostname = host.getHostName();
-		
-		SocketMap socketMap = allClientsListenerSockets.get(socketHostname);
-		MutexMessage return_message = new MutexMessage();
-
-		if(pendingReleaseToReceive == 0 ) {
-						
-
-			pendingReleaseToReceive = client_id;
-
-			return_message.setId(id);
-			return_message.setType(MessageType.REPLY);
-
-			System.out.println("-----SENT REPLY to "+socketHostname+"--");
-
-			socketMap.getO_out().writeObject(return_message);
-			
-			record.reply++;
-
-
-		} else {
-			
-			//lower id = high priority
-			if(pendingReleaseToReceive < client_id) {
-
-				return_message.setId(id);
-				return_message.setType(MessageType.FAILED);
-
-				System.out.println("-----SENT FAILED "+socketHostname+"--");
-
-				socketMap.getO_out().writeObject(return_message);
-				
-				record.fail++;
-				
-			} else {
-
-				if(pendingReleaseToReceive != id) {
-
-					return_message.setId(id);
-					return_message.setType(MessageType.ENQUIRE);
-
-					System.out.println("-----SENT ENQUIRE  "+socketHostname+"--");
-
-					InetSocketAddress addr = otherClients.get(pendingReleaseToReceive);
-					String client_hostname = addr.getHostName();
-					SocketMap client_socket_map = allClientsSockets.get(client_hostname);
-
-					client_socket_map.getO_out().writeObject(return_message);
-					
-					record.enquire++;
-					
-				} else {
-					request_fifo.add(client_id);
-				}
-			}
-		}
-	}
 	
 	public void init() {
 		
