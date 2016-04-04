@@ -74,8 +74,10 @@ public class ClientsClientThreadListener extends Client {
 				
 				if(message.getType().equals(MessageType.RELEASE)) {
 					
-					Request req = new Request(client_id, socketMap, MessageType.RELEASE);
-					request_q.add(req);
+					if(pendingReleaseToReceive == client_id) {
+						Request req = new Request(client_id, socketMap, MessageType.RELEASE);
+						request_q.add(req);
+					}
 					
 				}
 				
