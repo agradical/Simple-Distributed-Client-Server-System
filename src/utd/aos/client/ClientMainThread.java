@@ -23,12 +23,12 @@ public class ClientMainThread extends Client {
 			gotallReplies.acquire();
 			
 			
-			/*
-			while(pendingReleaseToReceive != 0 || pendingRepliesToReceive.size() != 0) {
+		
+			while(pendingRepliesToReceive.size() != 0) {
 			
 				Thread.sleep(2);
 
-			}*/
+			}
 
 			pendingReleaseToReceive = id;
 
