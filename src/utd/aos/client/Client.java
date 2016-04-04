@@ -373,11 +373,6 @@ public class Client implements Runnable{
 		record.yield++;
 		System.out.println("--RECV YIELD "+socketHostname);
 		
-		while(pendingReleaseToReceive == id) {
-			Thread.sleep(200);
-			System.out.println("WAIT in YIELD for Release");
-		}
-		
 		//request_fifo.add(client_id);
 		Iterator<Request> iterator = request_q.iterator();
 		int min_id_queued = 100;
