@@ -185,7 +185,7 @@ public class Client implements Runnable{
 			//clock = Math.max(message.getClock(), clock) + 1;
 			MutexMessage return_message = new MutexMessage();
 
-			if(pendingReleaseToReceive == 0 ) {
+			if(pendingReleaseToReceive == 0 && !pendingRepliesToReceive.containsKey(client_id)) {
 
 				record.request++;
 
