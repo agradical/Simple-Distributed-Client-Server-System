@@ -18,11 +18,19 @@ public class ClientMainThread extends Client {
 			
 			getMutex();
 			
-			while(pendingReleaseToReceive != 0 ) {
+			gotallReplies.acquire();
+			gotallReleases.acquire();
+			
+			gotallReplies.acquire();
+			gotallReleases.acquire();
+			
+			
+			/*
+			while(pendingReleaseToReceive != 0 || pendingRepliesToReceive.size() != 0) {
 			
 				Thread.sleep(2);
 
-			}
+			}*/
 
 			pendingReleaseToReceive = id;
 
@@ -39,6 +47,10 @@ public class ClientMainThread extends Client {
 			
 			sendRelease();
 
+			gotallReplies.release();
+			gotallReleases.release();
+			
+			
 			inprocess = false;
 			curr_req_done = true;
 			

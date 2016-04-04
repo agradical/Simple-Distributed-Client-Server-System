@@ -49,8 +49,8 @@ public class Client implements Runnable{
 	
 	public static Semaphore mutex = new Semaphore(1);	
 	
-	//public static Semaphore gotallReplies = new Semaphore(1);
-	//public static Semaphore gotallReleases = new Semaphore(1);
+	public static Semaphore gotallReplies = new Semaphore(1);
+	public static Semaphore gotallReleases = new Semaphore(1);
 	
 	public static int pendingReleaseToReceive;
 	public static int gotFailed;
@@ -256,6 +256,10 @@ public class Client implements Runnable{
 		
 		pendingRepliesToReceive.remove(client_id);
 
+		if(pendingRepliesToReceive.size() == 0) {
+			gotallReplies.release();
+		}
+		
 		record.reply++;
 	}
 	
@@ -268,6 +272,8 @@ public class Client implements Runnable{
 
 		pendingReleaseToReceive = 0;
 
+		gotallReleases.release();
+		
 		System.out.println("--Releasing release sema(release)-");
 
 		record.release++;
