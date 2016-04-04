@@ -357,6 +357,20 @@ public class Client implements Runnable{
 
 			record.yield++;
 
+		} else if (sentEnquire == 1){
+			
+			return_message.setId(id);
+			return_message.setType(MessageType.YIELD);
+
+			sentYieldMessageTo.put(client_id, true);
+			sentYield = 1;
+
+			System.out.println("--SENT YIELD "+socketHostname+"--");
+
+			socketmap.getO_out().writeObject(return_message);
+
+			record.yield++;
+			
 		} else {
 			
 			request_q.add(req);
