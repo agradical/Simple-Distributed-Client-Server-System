@@ -272,7 +272,6 @@ public class Client implements Runnable{
 
 		pendingReleaseToReceive = 0;
 
-		gotallReleases.release();
 		
 		System.out.println("--Releasing release sema(release)-");
 

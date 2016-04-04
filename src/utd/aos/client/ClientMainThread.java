@@ -19,10 +19,8 @@ public class ClientMainThread extends Client {
 			getMutex();
 			
 			gotallReplies.acquire();
-			gotallReleases.acquire();
 			
 			gotallReplies.acquire();
-			gotallReleases.acquire();
 			
 			
 			/*
@@ -48,7 +46,6 @@ public class ClientMainThread extends Client {
 			sendRelease();
 
 			gotallReplies.release();
-			gotallReleases.release();
 			
 			
 			inprocess = false;
