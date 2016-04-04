@@ -58,7 +58,7 @@ public class ClientMainThread extends Client {
 			//request_fifo.remove();
 
 			inprocess = false;
-			done = true;
+			curr_req_done = true;
 			
 		} catch (Exception e) {
 			try {
