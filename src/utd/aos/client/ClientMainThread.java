@@ -18,7 +18,7 @@ public class ClientMainThread extends Client {
 			
 			getMutex();
 			
-			while(pendingReleaseToReceive != 0 || pendingRepliesToReceive.size() != 0) {
+			while(pendingReleaseToReceive != 0 ) {
 			
 				Thread.sleep(2);
 
