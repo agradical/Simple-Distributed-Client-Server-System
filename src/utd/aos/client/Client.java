@@ -72,7 +72,7 @@ public class Client implements Runnable{
 	public static MessageRecord record = new MessageRecord();
 	
 	public static PriorityQueue<Request> request_q;
-	
+	boolean curr_req_done = false;
 	public Client() {
 	
 	}
@@ -87,8 +87,10 @@ public class Client implements Runnable{
 		init();
 		Random rand = new Random();
 		
+		
 		while(count <= 40) {
 
+			curr_req_done = false;
 			Integer delay = rand.nextInt(40);
 			
 			delay += 10;
@@ -148,7 +150,7 @@ public class Client implements Runnable{
 				 */
 				Request request = new Request(id, null, MessageType.REQUEST);
 				request_q.add(request);
-				while(!request_q.isEmpty()) {
+				while(!request_q.isEmpty() || !curr_req_done) {
 
 					Request req = request_q.remove();
 
@@ -174,12 +176,8 @@ public class Client implements Runnable{
 						handleGrant(req);
 					}
 
-					if(inprocess && pendingRepliesToReceive.size() == 0 && pendingReleaseToReceive == 0){
-						break;
-					}
-
+					Thread.sleep(10);
 				}
-
 
 				
 			} catch (Exception e) {
@@ -206,14 +204,10 @@ public class Client implements Runnable{
 	public void handleRequest(Request req, Operations operation) throws IOException, InterruptedException, ClassNotFoundException {		
 		System.out.println("----- "+req.getId()+" ------");
 		if(req.getId() == id) {
-			
-			if(pendingReleaseToReceive == 0) {
-				inprocess = true;
-				new Thread(new ClientMainThread(operation)).start();
-			} else {
-				request_q.add(req);
-			}
-			
+		
+			inprocess = true;
+			new Thread(new ClientMainThread(operation)).start();
+
 		} else {	
 			
 			SocketMap socketmap = req.getSocketmap();
