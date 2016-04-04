@@ -72,7 +72,7 @@ public class Client implements Runnable{
 	public static int count = 1;
 	public static MessageRecord record = new MessageRecord();
 	
-	public static Queue<Request> request_q;
+	public static PriorityQueue<Request> request_q;
 	boolean curr_req_done = false;
 	public Client() {
 	
@@ -599,8 +599,8 @@ public class Client implements Runnable{
 					System.out.println("Connect success: "+ip.getHostName()+"->"+addr.getHostName());
 
 					if(request_q == null) {
-						//request_q = new PriorityQueue<Request>(30, new RequestComparator());
-						request_q = new LinkedList<Request>();
+						request_q = new PriorityQueue<Request>(30, new RequestComparator());
+						//request_q = new LinkedList<Request>();
 					}
 					
 					break;
