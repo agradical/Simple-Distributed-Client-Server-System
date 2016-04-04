@@ -437,6 +437,9 @@ public class Client implements Runnable{
 		
 		if(pendingRepliesToReceive.containsKey(client_id)) {
 			pendingRepliesToReceive.remove(client_id);
+			if(pendingRepliesToReceive.size() == 0) {
+				gotallReplies.release();
+			}
 		}
 		
 		if(pendingReleaseToReceive == client_id)  {
