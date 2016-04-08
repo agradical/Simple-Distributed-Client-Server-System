@@ -15,15 +15,18 @@ public class ClientMainThread extends Client {
 		try {
 			
 			long starttime = System.currentTimeMillis();
-			
+
+			System.out.println("THREAD MAIN - Reply acquire");
 			gotallReplies.acquire();
 			
 			getMutex();
 			
+			System.out.println("THREAD MAIN - Reply acquire");
 			gotallReplies.acquire();
 			
 			pendingReleaseToReceive = id;
 		
+			System.out.println("THREAD MAIN - Release acquire");
 			gotallReleases.acquire();
 			
 //			while(pendingRepliesToReceive.size() != 0) {
@@ -46,7 +49,11 @@ public class ClientMainThread extends Client {
 			sentYield = 0;
 			
 			sendRelease();
+			
+			System.out.println("THREAD MAIN - Release release");
 			gotallReleases.release();
+			
+			System.out.println("THREAD MAIN - Reply release");
 			gotallReplies.release();
 			
 			printreport();

@@ -192,6 +192,8 @@ public class Client implements Runnable{
 				record.request++;
 
 				pendingReleaseToReceive = client_id;
+				
+				System.out.println("THREAD CLIENT - Release acquire");
 				gotallReleases.acquire();
 				
 				return_message.setId(id);
@@ -260,6 +262,8 @@ public class Client implements Runnable{
 		pendingRepliesToReceive.remove(client_id);
 
 		if(pendingRepliesToReceive.size() == 0) {
+			
+			System.out.println("THREAD MAIN - Reply release");
 			gotallReplies.release();
 		}
 		
@@ -409,6 +413,8 @@ public class Client implements Runnable{
 			}
 
 			pendingReleaseToReceive = min_id_queued;
+			
+			System.out.println("THREAD CLIENT - Release acquire");
 			gotallReleases.acquire();
 
 			sentEnquire = 0;
@@ -449,6 +455,8 @@ public class Client implements Runnable{
 		if(pendingRepliesToReceive.containsKey(client_id)) {
 			pendingRepliesToReceive.remove(client_id);
 			if(pendingRepliesToReceive.size() == 0) {
+				
+				System.out.println("THREAD MAIN - Relpy release");
 				gotallReplies.release();
 			}
 		}
