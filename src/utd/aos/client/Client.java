@@ -155,6 +155,7 @@ public class Client implements Runnable{
 				}
 			}
 			
+			System.out.print("Herereeeeee");
 			printreport();
 			count++;
 
