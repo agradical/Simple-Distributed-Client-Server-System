@@ -186,8 +186,10 @@ public class Client implements Runnable{
 			//clock = Math.max(message.getClock(), clock) + 1;
 			MutexMessage return_message = new MutexMessage();
 
-			if(pendingReleaseToReceive == 0 && !pendingRepliesToReceive.containsKey(client_id)
-					&& gotallReplies.availablePermits() > 0 && gotallReleases.availablePermits() == 1) {
+			if(pendingReleaseToReceive == 0 
+					&& !pendingRepliesToReceive.containsKey(client_id)
+					&& gotallReplies.availablePermits() > 0 
+					&& gotallReleases.availablePermits() == 1) {
 
 				record.request++;
 
@@ -205,10 +207,12 @@ public class Client implements Runnable{
 
 				record.reply++;
 
-			} else {
+			} else if(pendingReleaseToReceive != 0 
+					&& gotallReleases.availablePermits() <= 0){
 
 				//lower id = high priority
-				if(pendingReleaseToReceive < client_id) {
+				if(pendingReleaseToReceive != 0 
+						&& pendingReleaseToReceive < client_id) {
 
 					record.request++;
 
@@ -221,7 +225,7 @@ public class Client implements Runnable{
 
 					record.fail++;
 
-				} else {
+				} else if (pendingReleaseToReceive != 0) {
 
 					if(pendingReleaseToReceive != id) {
 
@@ -247,6 +251,8 @@ public class Client implements Runnable{
 						request_q.add(req);
 					}
 
+				} else {
+					request_q.add(req);
 				}
 			} 
 		}
