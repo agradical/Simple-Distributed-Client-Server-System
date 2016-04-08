@@ -47,6 +47,7 @@ public class ClientMainThread extends Client {
 
 			gotallReplies.release();
 			
+			printreport();
 			
 			inprocess = false;
 			curr_req_done = true;
