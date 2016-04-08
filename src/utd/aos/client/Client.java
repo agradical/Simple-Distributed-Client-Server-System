@@ -187,7 +187,7 @@ public class Client implements Runnable{
 			MutexMessage return_message = new MutexMessage();
 
 			if(pendingReleaseToReceive == 0 && !pendingRepliesToReceive.containsKey(client_id)
-					&& gotallReplies.availablePermits() >= 0 && gotallReleases.availablePermits() == 1) {
+					&& gotallReplies.availablePermits() > 0 && gotallReleases.availablePermits() == 1) {
 
 				record.request++;
 
@@ -382,7 +382,7 @@ public class Client implements Runnable{
 		int client_id = req.getId();
 
 		if(pendingReleaseToReceive == 0 && !pendingRepliesToReceive.containsKey(client_id)
-				&& gotallReplies.availablePermits() >= 0 && gotallReleases.availablePermits() == 1) {
+				&& gotallReplies.availablePermits() > 0 && gotallReleases.availablePermits() == 1) {
 
 
 			record.yield++;
