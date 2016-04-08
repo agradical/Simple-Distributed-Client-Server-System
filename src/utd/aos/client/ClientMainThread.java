@@ -16,26 +16,26 @@ public class ClientMainThread extends Client {
 			
 			long starttime = System.currentTimeMillis();
 			
+			gotallReplies.acquire();
+			
 			getMutex();
 			
 			gotallReplies.acquire();
 			
-			gotallReplies.acquire();
-			
-			
+			pendingReleaseToReceive = id;
 		
 			while(pendingRepliesToReceive.size() != 0) {
 			
 				Thread.sleep(2);
-
+				System.out.println("WAIT for pending replyies");
 			}
 
-			pendingReleaseToReceive = id;
-
+			
 			long endtime = System.currentTimeMillis();
 			
 			record.time = endtime-starttime;
 			System.out.println("--starting CS--");
+			
 			request(operation);
 			System.out.println("--Exiting CS--");
 			

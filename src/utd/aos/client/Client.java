@@ -186,7 +186,8 @@ public class Client implements Runnable{
 			//clock = Math.max(message.getClock(), clock) + 1;
 			MutexMessage return_message = new MutexMessage();
 
-			if(pendingReleaseToReceive == 0 && !pendingRepliesToReceive.containsKey(client_id)) {
+			if(pendingReleaseToReceive == 0 && !pendingRepliesToReceive.containsKey(client_id)
+					&& gotallReplies.availablePermits() >= 0) {
 
 				record.request++;
 
@@ -606,10 +607,12 @@ public class Client implements Runnable{
 			Integer client_id = hostIdMap.get(hostname);
 			MutexMessage message = new MutexMessage(id, MessageType.REQUEST);
 			
-			System.out.println("--SENT REQUEST "+hostname+"--");
+			
+			pendingRepliesToReceive.put(client_id, true);
 			
 			quorum_client.getO_out().writeObject(message);
-			pendingRepliesToReceive.put(client_id, true);
+			
+			System.out.println("--SENT REQUEST "+hostname+"--");
 			
 			//ClientsServerThreadListener clientServer = new ClientsServerThreadListener(quorum_client);
 			//Thread t = new Thread(clientServer);
