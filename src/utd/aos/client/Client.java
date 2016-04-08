@@ -187,12 +187,13 @@ public class Client implements Runnable{
 			MutexMessage return_message = new MutexMessage();
 
 			if(pendingReleaseToReceive == 0 && !pendingRepliesToReceive.containsKey(client_id)
-					&& gotallReplies.availablePermits() >= 0) {
+					&& gotallReplies.availablePermits() >= 0 && gotallReleases.availablePermits() == 1) {
 
 				record.request++;
 
 				pendingReleaseToReceive = client_id;
-
+				gotallReleases.acquire();
+				
 				return_message.setId(id);
 				return_message.setType(MessageType.REPLY);
 
@@ -273,10 +274,8 @@ public class Client implements Runnable{
 		System.out.println("---RECV RELEASE  "+ socketHostname+" --");
 
 		pendingReleaseToReceive = 0;
-
+		gotallReleases.release();
 		
-		System.out.println("--Releasing release sema(release)-");
-
 		record.release++;
 
 	}
@@ -373,56 +372,66 @@ public class Client implements Runnable{
 	}
 	
 	public void handleYield(Request req) throws IOException, InterruptedException {
-		
+
 		SocketMap socketmap = req.getSocketmap();
 		String socketHostname = socketmap.getAddr().getHostName();
 		int client_id = req.getId();
-		record.yield++;
-		System.out.println("--RECV YIELD "+socketHostname);
-		
-		//request_fifo.add(client_id);
-		Iterator<Request> iterator = request_q.iterator();
-		int min_id_queued = 100;
-		while(iterator.hasNext()) {
-			
-			Request r = iterator.next();
-			int i = r.getId();
-			if(i < min_id_queued) {
-				min_id_queued = i;
+
+		if(pendingReleaseToReceive == 0 && !pendingRepliesToReceive.containsKey(client_id)
+				&& gotallReplies.availablePermits() >= 0 && gotallReleases.availablePermits() == 1) {
+
+
+			record.yield++;
+			System.out.println("--RECV YIELD "+socketHostname);
+
+			//request_fifo.add(client_id);
+			Iterator<Request> iterator = request_q.iterator();
+			int min_id_queued = 100;
+			while(iterator.hasNext()) {
+
+				Request r = iterator.next();
+				int i = r.getId();
+				if(i < min_id_queued) {
+					min_id_queued = i;
+				}
 			}
-		}
-		
-		while(iterator.hasNext()) {
-			Request r = iterator.next();
-			int i = r.getId();
-			if(i == min_id_queued) {
-				iterator.remove();
+
+			while(iterator.hasNext()) {
+				Request r = iterator.next();
+				int i = r.getId();
+				if(i == min_id_queued) {
+					iterator.remove();
+				}
 			}
-		}
-		
-		if(min_id_queued == 100 || min_id_queued > client_id) {
-			min_id_queued = client_id;
+
+			if(min_id_queued == 100 || min_id_queued > client_id) {
+				min_id_queued = client_id;
+			}
+
+			pendingReleaseToReceive = min_id_queued;
+			gotallReleases.acquire();
+
+			sentEnquire = 0;
+
+			InetSocketAddress addr = otherClients.get(min_id_queued);
+
+			MutexMessage return_message = new MutexMessage();
+
+			String client_hostname = addr.getHostName();
+			SocketMap client_socket_map = allClientsSockets.get(client_hostname);
+
+			return_message.setId(id);
+			return_message.setType(MessageType.GRANT);
+
+			System.out.println("--SENT GRANT "+client_hostname+"--");
+
+			client_socket_map.getO_out().writeObject(return_message);
+		} else {
+			request_q.add(req);
 		}
 
-		pendingReleaseToReceive = min_id_queued;
-		sentEnquire = 0;
-		
-		InetSocketAddress addr = otherClients.get(min_id_queued);
-		
-		MutexMessage return_message = new MutexMessage();
-		
-		String client_hostname = addr.getHostName();
-		SocketMap client_socket_map = allClientsSockets.get(client_hostname);
-				
-		return_message.setId(id);
-		return_message.setType(MessageType.GRANT);
-		
-		System.out.println("--SENT GRANT "+client_hostname+"--");
-		
-		client_socket_map.getO_out().writeObject(return_message);	
-		
 	}
-	
+
 	public void handleGrant(Request req) {
 		SocketMap socketmap = req.getSocketmap();
 		String socketHostname = socketmap.getAddr().getHostName();

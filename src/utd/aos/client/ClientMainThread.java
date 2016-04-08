@@ -24,11 +24,13 @@ public class ClientMainThread extends Client {
 			
 			pendingReleaseToReceive = id;
 		
-			while(pendingRepliesToReceive.size() != 0) {
+			gotallReleases.acquire();
 			
-				Thread.sleep(2);
-				System.out.println("WAIT for pending replyies");
-			}
+//			while(pendingRepliesToReceive.size() != 0) {
+//			
+//				Thread.sleep(2);
+//				System.out.println("WAIT for pending replyies");
+//			}
 
 			
 			long endtime = System.currentTimeMillis();
@@ -44,7 +46,7 @@ public class ClientMainThread extends Client {
 			sentYield = 0;
 			
 			sendRelease();
-
+			gotallReleases.release();
 			gotallReplies.release();
 			
 			printreport();
