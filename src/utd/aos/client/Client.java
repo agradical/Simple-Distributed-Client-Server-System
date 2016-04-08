@@ -89,9 +89,9 @@ public class Client implements Runnable{
 		while(count <= 40) {
 
 			curr_req_done = false;
-			Integer delay = rand.nextInt(400);
+			Integer delay = rand.nextInt(40);
 			
-			delay += 100;
+			delay += 10;
 			
 			reset();
 
