@@ -291,7 +291,8 @@ public class Client implements Runnable{
 		System.out.println("--RECV ENQUIRE "+socketHostname);
 		MutexMessage return_message = new MutexMessage();
 		
-		if(pendingReleaseToReceive == 0 || gotFailed == 1 || sentYield == 1 ) {
+		if((pendingReleaseToReceive == 0 && gotallReleases.availablePermits() == 1) 
+				|| gotFailed == 1 || sentYield == 1 ) {
 			
 			record.enquire++;
 
